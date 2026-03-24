@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, borderRadius, shadows } from '../constants/theme';
 import { getBookById } from '../data/catalog';
 import { getAllProgress, getBookmarks } from '../services/storage';
@@ -104,7 +105,7 @@ export default function ReadingScreen() {
 
             {!hasContent && (
               <View style={styles.emptyState}>
-                <Text style={styles.emptyIcon}>{'\u2261'}</Text>
+                <Ionicons name="book-outline" size={48} color={colors.accentDim} style={{ marginBottom: 16 }} />
                 <Text style={styles.emptyTitle}>Begin Your Studies</Text>
                 <Text style={styles.emptyText}>
                   Your reading progress, bookmarks, and completed works will appear here.
@@ -118,7 +119,7 @@ export default function ReadingScreen() {
                 <SectionHeader
                   title="Currently Reading"
                   subtitle={`${inProgress.length} texts`}
-                  icon={'\u25B6'}
+                  icon="play-circle-outline"
                 />
                 {inProgress.map(({ book, progress }) => (
                   <BookListItem
@@ -137,7 +138,7 @@ export default function ReadingScreen() {
                 <SectionHeader
                   title="Bookmarks"
                   subtitle={`${bookmarks.length} saved`}
-                  icon={'\u2606'}
+                  icon="bookmark-outline"
                 />
                 {bookmarks.slice(0, 10).map(bm => (
                   <View key={bm.id} style={[styles.bookmarkCard, shadows.card]}>
@@ -157,7 +158,7 @@ export default function ReadingScreen() {
                 <SectionHeader
                   title="Completed"
                   subtitle={`${completed.length} texts mastered`}
-                  icon={'\u2713'}
+                  icon="checkmark-circle-outline"
                 />
                 {completed.map(({ book, progress }) => (
                   <BookListItem
@@ -227,10 +228,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: borderRadius.md,
     borderWidth: 1,
-    borderColor: colors.surfaceBorder,
+    borderColor: 'rgba(201,169,110,0.15)',
     marginHorizontal: spacing.xl,
     marginBottom: spacing.md,
     padding: spacing.lg,
+    shadowColor: 'rgba(0,0,0,0.4)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   bookmarkTitle: {
     ...fonts.serifBold,

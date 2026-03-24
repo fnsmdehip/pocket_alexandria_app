@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, borderRadius, shadows } from '../../src/constants/theme';
 import { books, categoryIcons } from '../../src/data/catalog';
 import { getBookText } from '../../src/services/bookDownloader';
@@ -105,11 +106,9 @@ export default function SearchTab() {
 
   const handleQueryChange = (text: string) => {
     setQuery(text);
-    // Debounce for metadata search
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (text.trim().length >= 2) {
       debounceRef.current = setTimeout(() => {
-        // Quick metadata-only search while typing
         const lq = text.toLowerCase();
         const quick: SearchResult[] = [];
         for (const book of books) {
@@ -148,7 +147,7 @@ export default function SearchTab() {
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
       <View style={styles.emptyIconWrap}>
-        <Text style={styles.emptyIcon}>{'\u2315'}</Text>
+        <Ionicons name="search" size={28} color={colors.accent} />
       </View>
       <Text style={styles.emptyTitle}>Search the Library</Text>
       <Text style={styles.emptyText}>
@@ -170,7 +169,7 @@ export default function SearchTab() {
               style={styles.recentItem}
               onPress={() => { setQuery(term); performSearch(term); }}
             >
-              <Text style={styles.recentItemIcon}>{'\u231A'}</Text>
+              <Ionicons name="time-outline" size={14} color={colors.textMuted} style={{ marginRight: 12 }} />
               <Text style={styles.recentItemText}>{term}</Text>
             </TouchableOpacity>
           ))}
@@ -184,7 +183,7 @@ export default function SearchTab() {
           {SUGGESTION_TERMS.map(term => (
             <TouchableOpacity
               key={term}
-              style={styles.suggestionChip}
+              style={[styles.suggestionChip, styles.cardDepth]}
               onPress={() => { setQuery(term); performSearch(term); }}
             >
               <Text style={styles.suggestionText}>{term}</Text>
@@ -199,8 +198,8 @@ export default function SearchTab() {
     <SafeAreaView style={styles.screen} edges={['top']}>
       {/* Search bar */}
       <View style={styles.searchBar}>
-        <View style={styles.searchInputContainer}>
-          <Text style={styles.searchIcon}>{'\u2315'}</Text>
+        <View style={[styles.searchInputContainer, styles.cardDepth]}>
+          <Ionicons name="search-outline" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
           <TextInput
             ref={inputRef}
             style={styles.searchInput}
@@ -219,7 +218,7 @@ export default function SearchTab() {
               style={styles.clearSearchBtn}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Text style={styles.clearText}>{'\u2715'}</Text>
+              <Ionicons name="close-circle" size={18} color={colors.textMuted} />
             </TouchableOpacity>
           )}
         </View>
@@ -240,7 +239,7 @@ export default function SearchTab() {
         </View>
       ) : hasSearched && results.length === 0 ? (
         <View style={styles.noResults}>
-          <Text style={styles.noResultsIcon}>{'\u2315'}</Text>
+          <Ionicons name="search" size={48} color={colors.accentDim} style={{ marginBottom: 16 }} />
           <Text style={styles.noResultsTitle}>No Results</Text>
           <Text style={styles.noResultsText}>
             Try different keywords or browse the collection.
@@ -261,15 +260,13 @@ export default function SearchTab() {
           }
           renderItem={({ item }) => (
             <TouchableOpacity
-              style={[styles.resultCard, shadows.card]}
+              style={[styles.resultCard, styles.cardDepth, shadows.card]}
               onPress={() => openReader(item.book.id)}
               activeOpacity={0.7}
             >
               <View style={styles.resultHeader}>
                 <View style={styles.resultIconWrap}>
-                  <Text style={styles.resultIcon}>
-                    {categoryIcons[item.book.category] || '\u2726'}
-                  </Text>
+                  <Ionicons name="flame-outline" size={18} color={colors.accent} />
                 </View>
                 <View style={styles.resultInfo}>
                   <Text style={styles.resultTitle} numberOfLines={1}>{item.book.title}</Text>
@@ -310,12 +307,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.surface,
     borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     paddingHorizontal: 12,
     height: 48,
   },
-  searchIcon: { fontSize: 18, color: colors.textMuted, marginRight: 8 },
+  cardDepth: {
+    borderWidth: 1,
+    borderColor: 'rgba(201,169,110,0.15)',
+    shadowColor: 'rgba(0,0,0,0.4)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
   searchInput: {
     flex: 1,
     ...fonts.sansRegular,
@@ -330,7 +333,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  clearText: { fontSize: 14, color: colors.textMuted },
   searchButton: {
     marginLeft: 10,
     paddingHorizontal: 16,
@@ -342,11 +344,10 @@ const styles = StyleSheet.create({
   },
   searchButtonText: { ...fonts.sansBold, fontSize: 14, color: colors.background },
   loadingState: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  loadingText: { ...fonts.sansRegular, fontSize: 14, color: colors.textSecondary, marginTop: 12 },
+  loadingText: { ...fonts.sansRegular, fontSize: 14, color: colors.textSecondary, fontWeight: '300', marginTop: 12 },
   noResults: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40 },
-  noResultsIcon: { fontSize: 48, color: colors.accentDim, marginBottom: 16 },
   noResultsTitle: { ...fonts.serifBold, fontSize: 22, color: colors.parchment, marginBottom: 8 },
-  noResultsText: { ...fonts.sansRegular, fontSize: 14, color: colors.textSecondary, textAlign: 'center' },
+  noResultsText: { ...fonts.sansRegular, fontSize: 14, color: colors.textSecondary, fontWeight: '300', textAlign: 'center' },
   emptyState: {
     flex: 1,
     paddingHorizontal: spacing.xl,
@@ -358,15 +359,14 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.surfaceBorder,
+    borderColor: 'rgba(201,169,110,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
     marginBottom: 16,
   },
-  emptyIcon: { fontSize: 28, color: colors.accent },
   emptyTitle: { ...fonts.serifBold, fontSize: 22, color: colors.parchment, textAlign: 'center', marginBottom: 8 },
-  emptyText: { ...fonts.sansRegular, fontSize: 14, color: colors.textSecondary, textAlign: 'center', lineHeight: 22 },
+  emptyText: { ...fonts.sansRegular, fontSize: 14, color: colors.textSecondary, fontWeight: '300', textAlign: 'center', lineHeight: 22 },
   recentSection: {
     marginTop: 28,
     width: '100%',
@@ -402,11 +402,6 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.divider,
     minHeight: 44,
   },
-  recentItemIcon: {
-    fontSize: 14,
-    color: colors.textMuted,
-    marginRight: 12,
-  },
   recentItemText: {
     ...fonts.sansRegular,
     fontSize: 15,
@@ -432,8 +427,6 @@ const styles = StyleSheet.create({
   suggestionChip: {
     backgroundColor: colors.surface,
     borderRadius: borderRadius.round,
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     paddingHorizontal: 16,
     paddingVertical: 10,
     minHeight: 44,
@@ -445,6 +438,8 @@ const styles = StyleSheet.create({
     ...fonts.sansRegular,
     fontSize: 13,
     color: colors.textSecondary,
+    fontWeight: '300',
+    fontVariant: ['tabular-nums'],
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
@@ -452,8 +447,6 @@ const styles = StyleSheet.create({
   resultCard: {
     backgroundColor: colors.surface,
     borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     marginHorizontal: spacing.lg,
     marginBottom: spacing.md,
     padding: spacing.lg,
@@ -468,10 +461,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: spacing.md,
   },
-  resultIcon: { fontSize: 18, color: colors.accent },
   resultInfo: { flex: 1 },
   resultTitle: { ...fonts.serifBold, fontSize: 15, color: colors.textPrimary },
-  resultAuthor: { ...fonts.sansRegular, fontSize: 12, color: colors.textSecondary, marginTop: 1 },
+  resultAuthor: { ...fonts.sansRegular, fontSize: 12, color: colors.textSecondary, fontWeight: '300', marginTop: 1 },
   matchBadge: {
     backgroundColor: colors.accentGlow,
     borderRadius: borderRadius.sm,
@@ -484,9 +476,10 @@ const styles = StyleSheet.create({
     ...fonts.sansRegular,
     fontSize: 13,
     color: colors.textSecondary,
+    fontWeight: '300',
     marginTop: 10,
     lineHeight: 19,
     fontStyle: 'italic',
   },
-  resultMeta: { ...fonts.sansLight, fontSize: 11, color: colors.textMuted, marginTop: 8 },
+  resultMeta: { ...fonts.sansLight, fontSize: 11, color: colors.textMuted, fontWeight: '300', marginTop: 8 },
 });

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, borderRadius, shadows } from '../../src/constants/theme';
 import { categories, categoryIcons, categoryDescriptions, getBooksByCategory } from '../../src/data/catalog';
 import BookCover from '../../src/components/BookCover';
@@ -70,17 +71,19 @@ export default function BrowseTab() {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.pillsContainer}
               renderItem={({ item }) => {
-                const icon = categoryIcons[item] || '\u2726';
                 const isActive = expandedCategory === item;
                 return (
                   <TouchableOpacity
-                    style={[styles.pill, isActive && styles.pillActive]}
+                    style={[styles.pill, styles.cardDepth, isActive && styles.pillActive]}
                     onPress={() => toggleCategory(item)}
                     activeOpacity={0.7}
                   >
-                    <Text style={[styles.pillIcon, isActive && styles.pillIconActive]}>
-                      {icon}
-                    </Text>
+                    <Ionicons
+                      name={isActive ? 'sparkles' : 'sparkles-outline'}
+                      size={14}
+                      color={isActive ? colors.accent : colors.textMuted}
+                      style={{ marginRight: 6 }}
+                    />
                     <Text style={[styles.pillText, isActive && styles.pillTextActive]}>
                       {item.split(' /')[0].split(' ')[0]}
                     </Text>
@@ -92,7 +95,6 @@ export default function BrowseTab() {
         }
         renderItem={({ item: category }) => {
           const catBooks = getBooksByCategory(category);
-          const icon = categoryIcons[category] || '\u2726';
           const description = categoryDescriptions[category] || '';
           const isExpanded = expandedCategory === category;
           const accentColor = categoryColors[category] || '#2A2A5C';
@@ -100,7 +102,7 @@ export default function BrowseTab() {
           return (
             <View style={styles.categorySection}>
               <TouchableOpacity
-                style={[styles.categoryCard, shadows.card]}
+                style={[styles.categoryCard, styles.cardDepth, shadows.card]}
                 onPress={() => toggleCategory(category)}
                 activeOpacity={0.7}
               >
@@ -108,7 +110,7 @@ export default function BrowseTab() {
                 <View style={[styles.categoryAccent, { backgroundColor: accentColor }]} />
                 <View style={styles.categoryHeader}>
                   <View style={[styles.categoryIconWrap, { backgroundColor: accentColor + '30' }]}>
-                    <Text style={styles.categoryIcon}>{icon}</Text>
+                    <Ionicons name="flame-outline" size={24} color={colors.accent} />
                   </View>
                   <View style={styles.categoryInfo}>
                     <Text style={styles.categoryName}>{category}</Text>
@@ -143,7 +145,11 @@ export default function BrowseTab() {
                 {/* Expand indicator */}
                 <View style={styles.expandIndicator}>
                   <Text style={styles.expandText}>
-                    {isExpanded ? '\u25B2 Collapse' : `\u25BC View all ${catBooks.length} texts`}
+                    {isExpanded ? (
+                      <><Ionicons name="chevron-up" size={12} color={colors.accent} /> Collapse</>
+                    ) : (
+                      <><Ionicons name="chevron-down" size={12} color={colors.accent} /> View all {catBooks.length} texts</>
+                    )}
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -190,6 +196,7 @@ const styles = StyleSheet.create({
     ...fonts.sansRegular,
     fontSize: 13,
     color: colors.textSecondary,
+    fontWeight: '300',
     marginTop: 4,
     marginBottom: 16,
   },
@@ -202,8 +209,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.surface,
     borderRadius: borderRadius.round,
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     paddingHorizontal: 14,
     paddingVertical: 8,
     minHeight: 44,
@@ -211,14 +216,6 @@ const styles = StyleSheet.create({
   pillActive: {
     backgroundColor: colors.accentGlow,
     borderColor: colors.accent,
-  },
-  pillIcon: {
-    fontSize: 14,
-    color: colors.textMuted,
-    marginRight: 6,
-  },
-  pillIconActive: {
-    color: colors.accent,
   },
   pillText: {
     ...fonts.sansRegular,
@@ -229,6 +226,15 @@ const styles = StyleSheet.create({
     ...fonts.sansBold,
     color: colors.accent,
   },
+  cardDepth: {
+    borderWidth: 1,
+    borderColor: 'rgba(201,169,110,0.15)',
+    shadowColor: 'rgba(0,0,0,0.4)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
   categorySection: {
     marginBottom: spacing.md,
   },
@@ -236,8 +242,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     marginHorizontal: spacing.lg,
     borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     overflow: 'hidden',
   },
   categoryAccent: {
@@ -257,10 +261,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: spacing.md,
   },
-  categoryIcon: {
-    fontSize: 24,
-    color: colors.accent,
-  },
   categoryInfo: {
     flex: 1,
   },
@@ -273,6 +273,7 @@ const styles = StyleSheet.create({
     ...fonts.sansRegular,
     fontSize: 12,
     color: colors.textSecondary,
+    fontWeight: '300',
     marginTop: 2,
     lineHeight: 17,
   },
@@ -289,11 +290,13 @@ const styles = StyleSheet.create({
     ...fonts.serifBold,
     fontSize: 18,
     color: colors.accent,
+    fontVariant: ['tabular-nums'],
   },
   countLabel: {
     ...fonts.sansLight,
     fontSize: 10,
     color: colors.textSecondary,
+    fontWeight: '300',
   },
   previewRow: {
     paddingLeft: spacing.lg,

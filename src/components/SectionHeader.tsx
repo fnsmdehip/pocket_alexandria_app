@@ -1,11 +1,14 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing } from '../constants/theme';
+
+type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
 interface SectionHeaderProps {
   title: string;
   subtitle?: string;
-  icon?: string;
+  icon?: IoniconsName;
   onSeeAll?: () => void;
 }
 
@@ -13,7 +16,7 @@ export default function SectionHeader({ title, subtitle, icon, onSeeAll }: Secti
   return (
     <View style={styles.container}>
       <View style={styles.left}>
-        {icon && <Text style={styles.icon}>{icon}</Text>}
+        {icon && <Ionicons name={icon} size={22} color={colors.accent} style={styles.icon} />}
         <View>
           <Text style={styles.title}>{title}</Text>
           {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
@@ -34,7 +37,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
-    paddingTop: spacing.xxl,
+    paddingTop: 28,
     paddingBottom: spacing.md,
   },
   left: {
@@ -43,8 +46,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   icon: {
-    fontSize: 22,
-    color: colors.accent,
     marginRight: spacing.md,
   },
   title: {
@@ -53,9 +54,10 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   subtitle: {
-    ...fonts.sansRegular,
+    ...fonts.sansLight,
     fontSize: 12,
     color: colors.textSecondary,
+    fontWeight: '300',
     marginTop: 2,
   },
   seeAll: {

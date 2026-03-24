@@ -1,13 +1,25 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Text, StyleSheet, View, Platform } from 'react-native';
+import { StyleSheet, View, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts } from '../../src/constants/theme';
 
-function TabIcon({ icon, label, focused }: { icon: string; label: string; focused: boolean }) {
+type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
+
+function TabIcon({ icon, iconOutline, label, focused }: { icon: IoniconsName; iconOutline: IoniconsName; label: string; focused: boolean }) {
   return (
     <View style={styles.tabItem}>
-      <Text style={[styles.tabIcon, focused && styles.tabIconActive]}>{icon}</Text>
-      <Text style={[styles.tabLabel, focused && styles.tabLabelActive]}>{label}</Text>
+      <Ionicons
+        name={focused ? icon : iconOutline}
+        size={22}
+        color={focused ? colors.accent : colors.tabInactive}
+      />
+      <View style={{ height: 2 }} />
+      <Ionicons
+        name={focused ? icon : iconOutline}
+        size={0}
+        color="transparent"
+      />
       {focused && <View style={styles.tabIndicator} />}
     </View>
   );
@@ -34,9 +46,14 @@ export default function TabLayout() {
           paddingTop: 8,
           paddingBottom: Platform.OS === 'ios' ? 28 : 8,
         },
-        tabBarActiveTintColor: colors.tabActive,
+        tabBarActiveTintColor: '#C9A96E',
         tabBarInactiveTintColor: colors.tabInactive,
-        tabBarShowLabel: false,
+        tabBarShowLabel: true,
+        tabBarLabelStyle: {
+          ...fonts.sansRegular,
+          fontSize: 10,
+          marginTop: 2,
+        },
       }}
     >
       <Tabs.Screen
@@ -44,8 +61,8 @@ export default function TabLayout() {
         options={{
           title: 'Library',
           headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon={'\u03A6'} label="Library" focused={focused} />
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? 'library' : 'library-outline'} size={22} color={color} />
           ),
         }}
       />
@@ -54,8 +71,8 @@ export default function TabLayout() {
         options={{
           title: 'Browse',
           headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon={'\u2261'} label="Browse" focused={focused} />
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? 'compass' : 'compass-outline'} size={22} color={color} />
           ),
         }}
       />
@@ -64,8 +81,8 @@ export default function TabLayout() {
         options={{
           title: 'Reading',
           headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon={'\u2637'} label="Reading" focused={focused} />
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? 'book' : 'book-outline'} size={22} color={color} />
           ),
         }}
       />
@@ -74,8 +91,8 @@ export default function TabLayout() {
         options={{
           title: 'Search',
           headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon={'\u2315'} label="Search" focused={focused} />
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? 'search' : 'search-outline'} size={22} color={color} />
           ),
         }}
       />
@@ -84,8 +101,8 @@ export default function TabLayout() {
         options={{
           title: 'Settings',
           headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon={'\u2699'} label="Settings" focused={focused} />
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? 'settings' : 'settings-outline'} size={22} color={color} />
           ),
         }}
       />
@@ -99,23 +116,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minWidth: 56,
     minHeight: 44,
-  },
-  tabIcon: {
-    fontSize: 22,
-    color: colors.tabInactive,
-    marginBottom: 2,
-  },
-  tabIconActive: {
-    color: colors.accent,
-  },
-  tabLabel: {
-    ...fonts.sansRegular,
-    fontSize: 10,
-    color: colors.tabInactive,
-  },
-  tabLabelActive: {
-    color: colors.accent,
-    ...fonts.sansBold,
   },
   tabIndicator: {
     position: 'absolute',

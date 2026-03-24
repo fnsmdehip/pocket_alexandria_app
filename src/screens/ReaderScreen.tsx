@@ -13,6 +13,7 @@ import {
   PanResponder,
 } from 'react-native';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, borderRadius, shadows } from '../constants/theme';
 import { readerThemes } from '../constants/theme';
 import { getBookById } from '../data/catalog';
@@ -219,7 +220,7 @@ export default function ReaderScreen() {
   if (error) {
     return (
       <View style={[styles.center, { backgroundColor: colors.background }]}>
-        <Text style={styles.errorIcon}>{'\u26A0'}</Text>
+        <Ionicons name="alert-circle-outline" size={36} color={colors.error} style={{ marginBottom: 12 }} />
         <Text style={styles.errorText}>{error}</Text>
         <TouchableOpacity style={styles.retryButton} onPress={() => navigation.goBack()}>
           <Text style={styles.retryText}>Go Back</Text>
@@ -277,7 +278,7 @@ export default function ReaderScreen() {
           {/* Top bar */}
           <View style={[styles.topBar, { backgroundColor: colors.overlay }]}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-              <Text style={styles.backText}>{'\u2190'} Back</Text>
+              <Text style={styles.backText}><Ionicons name="arrow-back" size={15} color={colors.accent} /> Back</Text>
             </TouchableOpacity>
             <View style={styles.topTitle}>
               <Text style={styles.topTitleText} numberOfLines={1}>
@@ -285,7 +286,7 @@ export default function ReaderScreen() {
               </Text>
             </View>
             <TouchableOpacity onPress={handleBookmark} style={styles.bookmarkButton}>
-              <Text style={styles.bookmarkIcon}>{'\u2606'}</Text>
+              <Ionicons name="star-outline" size={24} color={colors.accent} />
             </TouchableOpacity>
           </View>
 
@@ -344,7 +345,7 @@ export default function ReaderScreen() {
               }}
             >
               <Text style={styles.controlLabel}>
-                {'\u2606'} Bookmarks ({bookmarks.length})
+                <Ionicons name="bookmark-outline" size={14} color={colors.textPrimary} /> Bookmarks ({bookmarks.length})
               </Text>
             </TouchableOpacity>
           </View>
@@ -358,7 +359,7 @@ export default function ReaderScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Bookmarks</Text>
               <TouchableOpacity onPress={() => setShowBookmarks(false)}>
-                <Text style={styles.modalClose}>{'\u2715'}</Text>
+                <Ionicons name="close" size={18} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
             {bookmarks.length === 0 ? (
@@ -390,7 +391,7 @@ export default function ReaderScreen() {
                       onPress={() => removeBookmark(item.id)}
                       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >
-                      <Text style={styles.bookmarkDelete}>{'\u2715'}</Text>
+                      <Ionicons name="close-circle-outline" size={14} color={colors.textMuted} />
                     </TouchableOpacity>
                   </TouchableOpacity>
                 )}
@@ -477,6 +478,7 @@ const styles = StyleSheet.create({
     ...fonts.sansLight,
     fontSize: 12,
     marginBottom: 4,
+    fontVariant: ['tabular-nums'],
   },
   progressTrack: {
     width: '100%',

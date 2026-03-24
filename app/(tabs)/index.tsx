@@ -7,11 +7,11 @@ import {
   RefreshControl,
   TouchableOpacity,
   Dimensions,
-  Animated,
   Platform,
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, borderRadius, shadows } from '../../src/constants/theme';
 import { books, getBookById, categories, categoryIcons, getBooksByCategory } from '../../src/data/catalog';
 import { getAllProgress, getRecentBookIds, getLibraryBookIds } from '../../src/services/storage';
@@ -87,29 +87,29 @@ export default function LibraryTab() {
             <Text style={styles.heroTitle}>Your Library</Text>
           </View>
           <View style={styles.heroIconWrap}>
-            <Text style={styles.heroIcon}>{'\u03A6'}</Text>
+            <Ionicons name="library" size={24} color={colors.accent} />
           </View>
         </View>
 
         {/* Stats cards */}
         <View style={styles.statsRow}>
-          <View style={[styles.statCard, shadows.card]}>
-            <Text style={styles.statEmoji}>{'\u2261'}</Text>
+          <View style={[styles.statCard, styles.cardDepth]}>
+            <Ionicons name="book-outline" size={16} color={colors.accent} style={{ marginBottom: 4 }} />
             <Text style={styles.statNumber}>{downloadedIds.size}</Text>
             <Text style={styles.statLabel}>Books</Text>
           </View>
-          <View style={[styles.statCard, shadows.card]}>
-            <Text style={styles.statEmoji}>{'\u25B6'}</Text>
+          <View style={[styles.statCard, styles.cardDepth]}>
+            <Ionicons name="play-outline" size={16} color={colors.accent} style={{ marginBottom: 4 }} />
             <Text style={styles.statNumber}>{readingCount}</Text>
             <Text style={styles.statLabel}>Reading</Text>
           </View>
-          <View style={[styles.statCard, shadows.card]}>
-            <Text style={styles.statEmoji}>{'\u2713'}</Text>
+          <View style={[styles.statCard, styles.cardDepth]}>
+            <Ionicons name="checkmark-circle-outline" size={16} color={colors.accent} style={{ marginBottom: 4 }} />
             <Text style={styles.statNumber}>{completedCount}</Text>
             <Text style={styles.statLabel}>Finished</Text>
           </View>
-          <View style={[styles.statCard, shadows.card]}>
-            <Text style={styles.statEmoji}>{'\u2606'}</Text>
+          <View style={[styles.statCard, styles.cardDepth]}>
+            <Ionicons name="document-text-outline" size={16} color={colors.accent} style={{ marginBottom: 4 }} />
             <Text style={styles.statNumber}>{totalPagesRead}</Text>
             <Text style={styles.statLabel}>Pages</Text>
           </View>
@@ -122,7 +122,7 @@ export default function LibraryTab() {
       {/* Continue Reading */}
       {continueReading.length > 0 && (
         <>
-          <SectionHeader title="Continue Reading" icon={'\u25B6'} />
+          <SectionHeader title="Continue Reading" icon="play-circle-outline" />
           <FlatList
             horizontal
             data={continueReading}
@@ -131,7 +131,7 @@ export default function LibraryTab() {
             contentContainerStyle={styles.horizontalList}
             renderItem={({ item }) => (
               <TouchableOpacity
-                style={[styles.continueCard, shadows.card]}
+                style={[styles.continueCard, styles.cardDepth, shadows.card]}
                 onPress={() => openReader(item.id)}
                 activeOpacity={0.7}
               >
@@ -166,7 +166,7 @@ export default function LibraryTab() {
       {/* Recently Viewed */}
       {recentBooks.length > 0 && (
         <>
-          <SectionHeader title="Recently Viewed" icon={'\u231B'} />
+          <SectionHeader title="Recently Viewed" icon="time-outline" />
           <FlatList
             horizontal
             data={recentBooks.slice(0, 10)}
@@ -190,7 +190,7 @@ export default function LibraryTab() {
         <>
           <View style={styles.emptyState}>
             <View style={styles.emptyIconContainer}>
-              <Text style={styles.emptyIcon}>{'\u03A6'}</Text>
+              <Ionicons name="library" size={48} color={colors.accentDim} />
               <View style={styles.emptyIconRing} />
             </View>
             <Text style={styles.emptyTitle}>Welcome, Seeker</Text>
@@ -209,10 +209,9 @@ export default function LibraryTab() {
           {/* Show a preview from each category */}
           {featuredCategories.map(cat => {
             const catBooks = getBooksByCategory(cat).slice(0, 5);
-            const icon = categoryIcons[cat] || '\u2726';
             return (
               <View key={cat}>
-                <SectionHeader title={cat} icon={icon} />
+                <SectionHeader title={cat} icon="sparkles-outline" />
                 <FlatList
                   horizontal
                   data={catBooks}
@@ -238,7 +237,7 @@ export default function LibraryTab() {
         <SectionHeader
           title="Your Library"
           subtitle={`${downloadedBooks.length} books`}
-          icon={'\u2605'}
+          icon="star-outline"
         />
       )}
     </View>
@@ -298,6 +297,7 @@ const styles = StyleSheet.create({
     ...fonts.sansRegular,
     fontSize: 14,
     color: colors.textSecondary,
+    fontWeight: '300',
     marginBottom: 2,
   },
   heroTitle: {
@@ -315,10 +315,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(201, 169, 110, 0.25)',
   },
-  heroIcon: {
-    fontSize: 24,
-    color: colors.accent,
-  },
   statsRow: {
     flexDirection: 'row',
     gap: 10,
@@ -327,25 +323,30 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.surface,
     borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     paddingVertical: 12,
     alignItems: 'center',
   },
-  statEmoji: {
-    fontSize: 16,
-    color: colors.accent,
-    marginBottom: 4,
+  cardDepth: {
+    borderWidth: 1,
+    borderColor: 'rgba(201,169,110,0.15)',
+    shadowColor: 'rgba(0,0,0,0.4)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   statNumber: {
-    ...fonts.serifBold,
-    fontSize: 18,
+    fontSize: 48,
+    fontWeight: '200',
+    letterSpacing: -2,
     color: colors.parchment,
+    fontVariant: ['tabular-nums'],
   },
   statLabel: {
     ...fonts.sansLight,
     fontSize: 10,
     color: colors.textSecondary,
+    fontWeight: '300',
     marginTop: 2,
   },
   horizontalList: {
@@ -356,8 +357,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: colors.surface,
     borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     padding: 10,
     marginRight: spacing.md,
     width: SCREEN_WIDTH * 0.75,
@@ -377,6 +376,7 @@ const styles = StyleSheet.create({
     ...fonts.sansRegular,
     fontSize: 12,
     color: colors.textSecondary,
+    fontWeight: '300',
     marginBottom: 8,
   },
   continueProgress: {
@@ -400,6 +400,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.accent,
     marginLeft: 8,
+    fontVariant: ['tabular-nums'],
   },
   grid: {
     paddingBottom: 100,
@@ -419,10 +420,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 16,
   },
-  emptyIcon: {
-    fontSize: 48,
-    color: colors.accentDim,
-  },
   emptyIconRing: {
     position: 'absolute',
     width: 80,
@@ -441,6 +438,7 @@ const styles = StyleSheet.create({
     ...fonts.sansRegular,
     fontSize: 14,
     color: colors.textSecondary,
+    fontWeight: '300',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 20,

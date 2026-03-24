@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, borderRadius, readerThemes } from '../../src/constants/theme';
 import { getBookById } from '../../src/data/catalog';
 import { downloadBook, getBookText } from '../../src/services/bookDownloader';
@@ -301,7 +302,7 @@ export default function ReaderPage() {
   if (error) {
     return (
       <View style={[styles.center, { backgroundColor: colors.background }]}>
-        <Text style={styles.errorIcon}>{'\u26A0'}</Text>
+        <Ionicons name="alert-circle-outline" size={36} color={colors.error} style={{ marginBottom: 12 }} />
         <Text style={styles.errorText}>{error}</Text>
         <TouchableOpacity style={styles.retryButton} onPress={() => router.back()}>
           <Text style={styles.retryText}>Go Back</Text>
@@ -372,11 +373,11 @@ export default function ReaderPage() {
       {showControls && (
         <View style={styles.tapZones} pointerEvents="none">
           <View style={styles.tapZoneLeft}>
-            <Text style={styles.tapZoneText}>{'\u25C0'}</Text>
+            <Ionicons name="chevron-back" size={24} color={colors.textMuted} />
           </View>
           <View style={styles.tapZoneCenter} />
           <View style={styles.tapZoneRight}>
-            <Text style={styles.tapZoneText}>{'\u25B6'}</Text>
+            <Ionicons name="chevron-forward" size={24} color={colors.textMuted} />
           </View>
         </View>
       )}
@@ -391,7 +392,7 @@ export default function ReaderPage() {
                 onPress={() => router.back()}
                 style={styles.backButton}
               >
-                <Text style={styles.backText}>{'\u2190'} Back</Text>
+                <Text style={styles.backText}><Ionicons name="arrow-back" size={15} color={colors.accent} /> Back</Text>
               </TouchableOpacity>
               <View style={styles.topTitle}>
                 <Text style={styles.topTitleText} numberOfLines={1}>
@@ -402,9 +403,11 @@ export default function ReaderPage() {
                 onPress={handleBookmark}
                 style={styles.bookmarkButton}
               >
-                <Text style={[styles.bookmarkIconText, isBookmarked && styles.bookmarkActive]}>
-                  {isBookmarked ? '\u2605' : '\u2606'}
-                </Text>
+                <Ionicons
+                  name={isBookmarked ? 'star' : 'star-outline'}
+                  size={24}
+                  color={colors.accent}
+                />
               </TouchableOpacity>
             </SafeAreaView>
           </View>
@@ -483,9 +486,9 @@ export default function ReaderPage() {
                 }}
               >
                 <Text style={styles.controlLabel}>
-                  {'\u2606'} Bookmarks ({bookmarks.length})
+                  <Ionicons name="bookmark-outline" size={14} color={colors.textPrimary} /> Bookmarks ({bookmarks.length})
                 </Text>
-                <Text style={styles.bookmarkArrow}>{'\u203A'}</Text>
+                <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
               </TouchableOpacity>
 
               {/* Highlights button */}
@@ -494,7 +497,7 @@ export default function ReaderPage() {
                 onPress={handleHighlightPage}
               >
                 <Text style={styles.controlLabel}>
-                  {'\u270F'} Highlight This Page
+                  <Ionicons name="color-wand-outline" size={14} color={colors.textPrimary} /> Highlight This Page
                 </Text>
               </TouchableOpacity>
 
@@ -506,9 +509,9 @@ export default function ReaderPage() {
                 }}
               >
                 <Text style={styles.controlLabel}>
-                  {'\u2726'} Highlights ({highlights.length})
+                  <Ionicons name="sparkles-outline" size={14} color={colors.textPrimary} /> Highlights ({highlights.length})
                 </Text>
-                <Text style={styles.bookmarkArrow}>{'\u203A'}</Text>
+                <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
               </TouchableOpacity>
             </SafeAreaView>
           </View>
@@ -526,12 +529,12 @@ export default function ReaderPage() {
                 onPress={() => setShowBookmarks(false)}
                 style={styles.modalCloseBtn}
               >
-                <Text style={styles.modalClose}>{'\u2715'}</Text>
+                <Ionicons name="close" size={18} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
             {bookmarks.length === 0 ? (
               <View style={styles.emptyBookmarks}>
-                <Text style={styles.emptyBookmarksIcon}>{'\u2606'}</Text>
+                <Ionicons name="star-outline" size={36} color={colors.accentDim} style={{ marginBottom: 12 }} />
                 <Text style={styles.emptyBookmarksTitle}>No Bookmarks Yet</Text>
                 <Text style={styles.emptyBookmarksText}>
                   Tap the star icon to bookmark the current page.
@@ -565,7 +568,7 @@ export default function ReaderPage() {
                       style={styles.bookmarkDeleteBtn}
                       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >
-                      <Text style={styles.bookmarkDelete}>{'\u2715'}</Text>
+                      <Ionicons name="close-circle-outline" size={16} color={colors.textMuted} />
                     </TouchableOpacity>
                   </TouchableOpacity>
                 )}
@@ -585,12 +588,12 @@ export default function ReaderPage() {
                 onPress={() => setShowHighlights(false)}
                 style={styles.modalCloseBtn}
               >
-                <Text style={styles.modalClose}>{'\u2715'}</Text>
+                <Ionicons name="close" size={18} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
             {highlights.length === 0 ? (
               <View style={styles.emptyBookmarks}>
-                <Text style={styles.emptyBookmarksIcon}>{'\u2726'}</Text>
+                <Ionicons name="sparkles-outline" size={36} color={colors.accentDim} style={{ marginBottom: 12 }} />
                 <Text style={styles.emptyBookmarksTitle}>No Highlights Yet</Text>
                 <Text style={styles.emptyBookmarksText}>
                   Use the highlight button in controls to save passages.
@@ -624,7 +627,7 @@ export default function ReaderPage() {
                       style={styles.bookmarkDeleteBtn}
                       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >
-                      <Text style={styles.bookmarkDelete}>{'\u2715'}</Text>
+                      <Ionicons name="close-circle-outline" size={16} color={colors.textMuted} />
                     </TouchableOpacity>
                   </TouchableOpacity>
                 )}
@@ -715,10 +718,12 @@ const styles = StyleSheet.create({
   pageNumber: {
     ...fonts.sansLight,
     fontSize: 12,
+    fontVariant: ['tabular-nums'],
   },
   percentText: {
     ...fonts.sansBold,
     fontSize: 12,
+    fontVariant: ['tabular-nums'],
   },
 
   // Tap zones (visual hints)

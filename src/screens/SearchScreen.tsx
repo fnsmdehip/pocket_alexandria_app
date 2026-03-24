@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, borderRadius, shadows } from '../constants/theme';
 import { searchBooks as searchCatalog, books, categoryIcons } from '../data/catalog';
 import { getBookText } from '../services/bookDownloader';
@@ -105,7 +106,7 @@ export default function SearchScreen() {
       {/* Search bar */}
       <View style={styles.searchBar}>
         <View style={styles.searchInputContainer}>
-          <Text style={styles.searchIcon}>{'\u2315'}</Text>
+          <Ionicons name="search-outline" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
           <TextInput
             ref={inputRef}
             style={styles.searchInput}
@@ -127,7 +128,7 @@ export default function SearchScreen() {
               }}
               style={styles.clearBtn}
             >
-              <Text style={styles.clearText}>{'\u2715'}</Text>
+              <Ionicons name="close-circle" size={16} color={colors.textMuted} />
             </TouchableOpacity>
           )}
         </View>
@@ -150,7 +151,7 @@ export default function SearchScreen() {
         </View>
       ) : hasSearched && results.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyIcon}>{'\u2315'}</Text>
+          <Ionicons name="search" size={48} color={colors.accentDim} style={{ marginBottom: 16 }} />
           <Text style={styles.emptyTitle}>No Results</Text>
           <Text style={styles.emptyText}>
             Try different keywords or browse the collection instead.
@@ -158,7 +159,7 @@ export default function SearchScreen() {
         </View>
       ) : !hasSearched ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyIcon}>{'\u2315'}</Text>
+          <Ionicons name="search" size={48} color={colors.accentDim} style={{ marginBottom: 16 }} />
           <Text style={styles.emptyTitle}>Search the Library</Text>
           <Text style={styles.emptyText}>
             Search across 156 texts by title, author, or content within downloaded books.
@@ -201,9 +202,7 @@ export default function SearchScreen() {
               activeOpacity={0.7}
             >
               <View style={styles.resultHeader}>
-                <Text style={styles.resultIcon}>
-                  {categoryIcons[item.book.category] || '\u2726'}
-                </Text>
+                <Ionicons name="flame-outline" size={20} color={colors.accent} style={{ marginRight: spacing.md, width: 28, textAlign: 'center' }} />
                 <View style={styles.resultInfo}>
                   <Text style={styles.resultTitle} numberOfLines={1}>
                     {item.book.title}
@@ -342,10 +341,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: borderRadius.round,
     borderWidth: 1,
-    borderColor: colors.surfaceBorder,
+    borderColor: 'rgba(201,169,110,0.15)',
     paddingHorizontal: 16,
     paddingVertical: 8,
     margin: 4,
+    shadowColor: 'rgba(0,0,0,0.4)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   suggestionText: {
     ...fonts.sansRegular,
@@ -367,10 +371,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: borderRadius.md,
     borderWidth: 1,
-    borderColor: colors.surfaceBorder,
+    borderColor: 'rgba(201,169,110,0.15)',
     marginHorizontal: spacing.lg,
     marginBottom: spacing.md,
     padding: spacing.lg,
+    shadowColor: 'rgba(0,0,0,0.4)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   resultHeader: {
     flexDirection: 'row',

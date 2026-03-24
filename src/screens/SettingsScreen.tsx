@@ -10,6 +10,7 @@ import {
   Linking,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, borderRadius, shadows, readerThemes, APP_CONFIG } from '../constants/theme';
 import { getSettings, saveSettings, getStats, getAllProgress, resetOnboarding } from '../services/storage';
 import { getCacheSize, clearCache, downloadBook } from '../services/bookDownloader';
@@ -324,7 +325,7 @@ export default function SettingsScreen() {
         <View style={[styles.card, shadows.card]}>
           <TouchableOpacity style={styles.settingRow} onPress={handleResetOnboarding}>
             <Text style={styles.settingLabel}>Show Onboarding Again</Text>
-            <Text style={styles.settingArrow}>{'\u203A'}</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
           </TouchableOpacity>
         </View>
       </View>
@@ -338,7 +339,7 @@ export default function SettingsScreen() {
             onPress={() => Linking.openURL(APP_CONFIG.PRIVACY_POLICY_URL)}
           >
             <Text style={styles.settingLabel}>Privacy Policy</Text>
-            <Text style={styles.settingArrow}>{'\u203A'}</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
           </TouchableOpacity>
           <View style={styles.divider} />
           <TouchableOpacity
@@ -346,7 +347,7 @@ export default function SettingsScreen() {
             onPress={() => Linking.openURL(APP_CONFIG.TERMS_URL)}
           >
             <Text style={styles.settingLabel}>Terms of Service</Text>
-            <Text style={styles.settingArrow}>{'\u203A'}</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
           </TouchableOpacity>
           <View style={styles.divider} />
           <TouchableOpacity
@@ -354,7 +355,7 @@ export default function SettingsScreen() {
             onPress={() => Linking.openURL(APP_CONFIG.SUPPORT_URL)}
           >
             <Text style={styles.settingLabel}>Support</Text>
-            <Text style={styles.settingArrow}>{'\u203A'}</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
           </TouchableOpacity>
           <View style={styles.divider} />
           <TouchableOpacity
@@ -366,7 +367,7 @@ export default function SettingsScreen() {
             )}
           >
             <Text style={styles.settingLabel}>Restore Purchases</Text>
-            <Text style={styles.settingArrow}>{'\u203A'}</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
           </TouchableOpacity>
         </View>
       </View>
@@ -425,7 +426,7 @@ const styles = StyleSheet.create({
   },
   section: {
     paddingHorizontal: spacing.xl,
-    marginTop: spacing.xxl,
+    marginTop: 28,
   },
   sectionTitle: {
     ...fonts.sansBold,
@@ -438,8 +439,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: borderRadius.lg,
     borderWidth: 1,
-    borderColor: colors.surfaceBorder,
+    borderColor: 'rgba(201,169,110,0.15)',
     padding: spacing.lg,
+    shadowColor: 'rgba(0,0,0,0.4)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -450,14 +456,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statNumber: {
-    ...fonts.serifBold,
-    fontSize: 24,
+    fontSize: 48,
+    fontWeight: '200',
+    letterSpacing: -2,
     color: colors.accent,
+    fontVariant: ['tabular-nums'],
   },
   statLabel: {
     ...fonts.sansLight,
     fontSize: 11,
     color: colors.textSecondary,
+    fontWeight: '300',
     marginTop: 2,
   },
   statRow: {
@@ -474,6 +483,7 @@ const styles = StyleSheet.create({
     ...fonts.sansBold,
     fontSize: 14,
     color: colors.textPrimary,
+    fontVariant: ['tabular-nums'],
   },
   divider: {
     height: 1,
@@ -499,11 +509,11 @@ const styles = StyleSheet.create({
     ...fonts.sansLight,
     fontSize: 12,
     color: colors.textMuted,
+    fontWeight: '300',
     marginTop: 2,
   },
   settingArrow: {
-    fontSize: 22,
-    color: colors.textMuted,
+    // kept for compat but Ionicons used now
   },
   stepper: {
     flexDirection: 'row',
@@ -530,6 +540,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     width: 44,
     textAlign: 'center',
+    fontVariant: ['tabular-nums'],
   },
   themeButtons: {
     flexDirection: 'row',
@@ -611,6 +622,7 @@ const styles = StyleSheet.create({
     ...fonts.sansBold,
     fontSize: 13,
     color: colors.accent,
+    fontVariant: ['tabular-nums'],
   },
   aboutRow: {
     flexDirection: 'row',

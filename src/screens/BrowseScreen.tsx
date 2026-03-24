@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, borderRadius, shadows } from '../constants/theme';
 import { categories, categoryIcons, categoryDescriptions, getBooksByCategory } from '../data/catalog';
 import BookCover from '../components/BookCover';
@@ -57,7 +58,7 @@ export default function BrowseScreen() {
                 activeOpacity={0.7}
               >
                 <View style={styles.categoryHeader}>
-                  <Text style={styles.categoryIcon}>{icon}</Text>
+                  <Ionicons name="flame-outline" size={28} color={colors.accent} />
                   <View style={styles.categoryInfo}>
                     <Text style={styles.categoryName}>{category}</Text>
                     <Text style={styles.categoryDesc} numberOfLines={2}>
@@ -141,8 +142,13 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.lg,
     borderRadius: borderRadius.lg,
     borderWidth: 1,
-    borderColor: colors.surfaceBorder,
+    borderColor: 'rgba(201,169,110,0.15)',
     overflow: 'hidden',
+    shadowColor: 'rgba(0,0,0,0.4)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   categoryHeader: {
     flexDirection: 'row',
@@ -168,6 +174,7 @@ const styles = StyleSheet.create({
     ...fonts.sansRegular,
     fontSize: 12,
     color: colors.textSecondary,
+    fontWeight: '300',
     marginTop: 2,
     lineHeight: 17,
   },

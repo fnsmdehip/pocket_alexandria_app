@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, borderRadius } from '../constants/theme';
 import { books, getBookById } from '../data/catalog';
 import { getAllProgress, getRecentBookIds, getLibraryBookIds } from '../services/storage';
@@ -69,7 +70,7 @@ export default function LibraryScreen() {
     <View>
       {/* Hero */}
       <View style={styles.hero}>
-        <Text style={styles.heroIcon}>{'\u03A6'}</Text>
+        <Ionicons name="library" size={36} color={colors.accent} style={{ marginBottom: 8 }} />
         <Text style={styles.heroTitle}>Pocket Alexandria</Text>
         <Text style={styles.heroSubtitle}>Your personal ancient library</Text>
         <View style={styles.heroStats}>
@@ -95,7 +96,7 @@ export default function LibraryScreen() {
       {/* Continue Reading */}
       {continueReading.length > 0 && (
         <>
-          <SectionHeader title="Continue Reading" icon={'\u25B6'} />
+          <SectionHeader title="Continue Reading" icon="play-circle-outline" />
           <FlatList
             horizontal
             data={continueReading}
@@ -117,7 +118,7 @@ export default function LibraryScreen() {
       {/* Recently Viewed */}
       {recentBooks.length > 0 && (
         <>
-          <SectionHeader title="Recently Viewed" icon={'\u231B'} />
+          <SectionHeader title="Recently Viewed" icon="time-outline" />
           <FlatList
             horizontal
             data={recentBooks.slice(0, 10)}
@@ -141,13 +142,13 @@ export default function LibraryScreen() {
         <SectionHeader
           title="Your Library"
           subtitle={`${downloadedBooks.length} books`}
-          icon={'\u2605'}
+          icon="star-outline"
         />
       )}
 
       {downloadedBooks.length === 0 && recentBooks.length === 0 && (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyIcon}>{'\u03A6'}</Text>
+          <Ionicons name="library" size={48} color={colors.accentDim} style={{ marginBottom: 16 }} />
           <Text style={styles.emptyTitle}>Welcome, Seeker</Text>
           <Text style={styles.emptyText}>
             Your library is empty. Browse the collection and begin your journey through the wisdom of the ages.
@@ -226,9 +227,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   statNumber: {
-    ...fonts.serifBold,
-    fontSize: 20,
+    fontSize: 48,
+    fontWeight: '200',
+    letterSpacing: -2,
     color: colors.accent,
+    fontVariant: ['tabular-nums'],
   },
   statLabel: {
     ...fonts.sansLight,

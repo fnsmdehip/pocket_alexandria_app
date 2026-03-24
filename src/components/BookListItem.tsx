@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, borderRadius, spacing, shadows } from '../constants/theme';
 import { Book } from '../types';
-import { categoryIcons } from '../data/catalog';
 
 interface BookListItemProps {
   book: Book;
@@ -12,17 +12,15 @@ interface BookListItemProps {
 }
 
 export default function BookListItem({ book, progress, downloaded, onPress }: BookListItemProps) {
-  const icon = categoryIcons[book.category] || '\u2726';
-
   return (
     <TouchableOpacity
-      style={[styles.container, shadows.card]}
+      style={[styles.container, styles.cardDepth, shadows.card]}
       onPress={onPress}
       activeOpacity={0.7}
     >
       {/* Mini cover */}
       <View style={styles.miniCover}>
-        <Text style={styles.coverIcon}>{icon}</Text>
+        <Ionicons name="flame-outline" size={20} color={colors.accent} />
       </View>
 
       {/* Info */}
@@ -42,7 +40,7 @@ export default function BookListItem({ book, progress, downloaded, onPress }: Bo
           {downloaded && (
             <>
               <Text style={styles.metaDot}>{'\u00B7'}</Text>
-              <Text style={styles.downloadedBadge}>{'\u2713'}</Text>
+              <Ionicons name="checkmark-circle" size={11} color={colors.success} />
             </>
           )}
         </View>
@@ -59,7 +57,7 @@ export default function BookListItem({ book, progress, downloaded, onPress }: Bo
       </View>
 
       {/* Arrow */}
-      <Text style={styles.arrow}>{'\u203A'}</Text>
+      <Ionicons name="chevron-forward" size={18} color={colors.textMuted} style={{ marginLeft: 8 }} />
     </TouchableOpacity>
   );
 }
@@ -69,13 +67,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: colors.surface,
     borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     marginHorizontal: spacing.xl,
     marginBottom: spacing.md,
     padding: spacing.md,
     alignItems: 'center',
     minHeight: 72,
+  },
+  cardDepth: {
+    borderWidth: 1,
+    borderColor: 'rgba(201,169,110,0.15)',
+    shadowColor: 'rgba(0,0,0,0.4)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   miniCover: {
     width: 50,
@@ -87,10 +92,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
-  },
-  coverIcon: {
-    fontSize: 20,
-    color: colors.accent,
   },
   info: {
     flex: 1,
@@ -105,6 +106,7 @@ const styles = StyleSheet.create({
     ...fonts.sansRegular,
     fontSize: 12,
     color: colors.textSecondary,
+    fontWeight: '300',
     marginBottom: 4,
   },
   metaRow: {
@@ -114,15 +116,12 @@ const styles = StyleSheet.create({
   meta: {
     fontSize: 11,
     color: colors.textMuted,
+    fontWeight: '300',
   },
   metaDot: {
     fontSize: 11,
     color: colors.textMuted,
     marginHorizontal: 4,
-  },
-  downloadedBadge: {
-    fontSize: 11,
-    color: colors.success,
   },
   progressContainer: {
     flexDirection: 'row',
@@ -145,10 +144,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: colors.textMuted,
     marginLeft: 6,
-  },
-  arrow: {
-    fontSize: 22,
-    color: colors.textMuted,
-    marginLeft: 8,
+    fontVariant: ['tabular-nums'],
   },
 });

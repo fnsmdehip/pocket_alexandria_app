@@ -11,6 +11,7 @@ import {
   Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, borderRadius, shadows, APP_CONFIG } from '../constants/theme';
 import { categories, categoryIcons, categoryDescriptions, getBooksByCategory } from '../data/catalog';
 import { completeOnboarding } from '../services/storage';
@@ -110,13 +111,13 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     <View style={styles.stepContainer}>
       <View style={styles.welcomeContent}>
         <View style={styles.welcomeIconContainer}>
-          <Text style={styles.welcomeIcon}>{'\u03A6'}</Text>
+          <Ionicons name="library" size={64} color={colors.accent} />
           <View style={styles.welcomeIconRing} />
         </View>
         <Text style={styles.welcomeTitle}>Welcome to{'\n'}Pocket Alexandria</Text>
         <View style={styles.ornamentRow}>
           <View style={styles.ornamentDash} />
-          <Text style={styles.ornamentSymbol}>{'\u2726'}</Text>
+          <Ionicons name="sparkles" size={12} color={colors.accent} style={{ marginHorizontal: 10, opacity: 0.6 }} />
           <View style={styles.ornamentDash} />
         </View>
         <Text style={styles.welcomeSubtitle}>
@@ -124,13 +125,13 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         </Text>
         <View style={styles.welcomeFeatures}>
           {[
-            ['\u2261', '156 public domain texts'],
-            ['\u2606', 'Bookmark and track progress'],
-            ['\u2315', 'Search across all texts'],
-            ['\u263C', 'Beautiful reading experience'],
-          ].map(([icon, label]) => (
+            { icon: 'book-outline' as const, label: '156 public domain texts' },
+            { icon: 'bookmark-outline' as const, label: 'Bookmark and track progress' },
+            { icon: 'search-outline' as const, label: 'Search across all texts' },
+            { icon: 'sunny-outline' as const, label: 'Beautiful reading experience' },
+          ].map(({ icon, label }) => (
             <View key={label} style={styles.featureRow}>
-              <Text style={styles.featureIcon}>{icon}</Text>
+              <Ionicons name={icon} size={20} color={colors.accent} style={{ width: 32, textAlign: 'center' }} />
               <Text style={styles.featureLabel}>{label}</Text>
             </View>
           ))}
@@ -276,14 +277,14 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         {/* Features list */}
         <View style={styles.demoFeatures}>
           {[
-            ['\u263C', 'Night, Sepia & Day themes', 'Easy on the eyes for long sessions'],
-            ['A', 'Adjustable typography', 'Font size and line spacing controls'],
-            ['\u25C0  \u25B6', 'Tap to navigate', 'Tap left/right edges or swipe'],
-            ['\u2606', 'Bookmarks', 'Save your place with a tap'],
-          ].map(([icon, title, desc]) => (
+            { icon: 'sunny-outline' as const, title: 'Night, Sepia & Day themes', desc: 'Easy on the eyes for long sessions' },
+            { icon: 'text-outline' as const, title: 'Adjustable typography', desc: 'Font size and line spacing controls' },
+            { icon: 'swap-horizontal-outline' as const, title: 'Tap to navigate', desc: 'Tap left/right edges or swipe' },
+            { icon: 'bookmark-outline' as const, title: 'Bookmarks', desc: 'Save your place with a tap' },
+          ].map(({ icon, title, desc }) => (
             <View key={title} style={styles.demoFeatureRow}>
               <View style={styles.demoFeatureIcon}>
-                <Text style={styles.demoFeatureIconText}>{icon}</Text>
+                <Ionicons name={icon} size={18} color={colors.accent} />
               </View>
               <View style={styles.demoFeatureInfo}>
                 <Text style={styles.demoFeatureTitle}>{title}</Text>
@@ -308,7 +309,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     <View style={styles.stepContainer}>
       <ScrollView contentContainerStyle={styles.paywallScroll} showsVerticalScrollIndicator={false}>
         <View style={styles.paywallHeader}>
-          <Text style={styles.paywallIcon}>{'\u03A6'}</Text>
+          <Ionicons name="diamond-outline" size={44} color={colors.accent} style={{ marginBottom: 12 }} />
           <Text style={styles.paywallTitle}>Unlock the Full Library</Text>
           <Text style={styles.paywallSubtitle}>
             Start your 7-day free trial today
@@ -372,7 +373,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
             'Night, Sepia & Day reader themes',
           ].map((feature, i) => (
             <View key={i} style={styles.tierFeatureRow}>
-              <Text style={[styles.tierCheck, styles.tierCheckPremium]}>{'\u2713'}</Text>
+              <Ionicons name="checkmark-circle" size={14} color={colors.accent} style={{ width: 24 }} />
               <Text style={[styles.tierFeatureText, styles.tierFeaturePremium]}>{feature}</Text>
             </View>
           ))}
@@ -551,6 +552,7 @@ const styles = StyleSheet.create({
     ...fonts.sansRegular,
     fontSize: 15,
     color: colors.textSecondary,
+    fontWeight: '300',
     textAlign: 'center',
     lineHeight: 24,
   },
@@ -594,6 +596,7 @@ const styles = StyleSheet.create({
     ...fonts.sansRegular,
     fontSize: 14,
     color: colors.textSecondary,
+    fontWeight: '300',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -769,6 +772,7 @@ const styles = StyleSheet.create({
     ...fonts.sansRegular,
     fontSize: 13,
     color: colors.textSecondary,
+    fontWeight: '300',
     marginTop: 2,
   },
 

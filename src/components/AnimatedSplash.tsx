@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts } from '../constants/theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -86,7 +87,7 @@ export default function AnimatedSplash({ onFinish }: AnimatedSplashProps) {
           },
         ]}
       >
-        {'\u03A6'}
+        <Ionicons name="library" size={72} color={colors.accent} />
       </Animated.Text>
 
       <Animated.View

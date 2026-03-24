@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, borderRadius, shadows } from '../../src/constants/theme';
 import { getBookById, categoryIcons } from '../../src/data/catalog';
 import { getAllProgress, getBookmarks } from '../../src/services/storage';
@@ -108,7 +109,7 @@ export default function ReadingTab() {
 
             {/* Reading stats strip */}
             {hasContent && (
-              <View style={styles.statsStrip}>
+              <View style={[styles.statsStrip, styles.cardDepth]}>
                 <View style={styles.statsStripItem}>
                   <Text style={styles.statsStripNumber}>{inProgress.length}</Text>
                   <Text style={styles.statsStripLabel}>In Progress</Text>
@@ -129,7 +130,7 @@ export default function ReadingTab() {
             {!hasContent && (
               <View style={styles.emptyState}>
                 <View style={styles.emptyIconWrap}>
-                  <Text style={styles.emptyIcon}>{'\u2261'}</Text>
+                  <Ionicons name="book-outline" size={32} color={colors.accentDim} />
                 </View>
                 <Text style={styles.emptyTitle}>Begin Your Studies</Text>
                 <Text style={styles.emptyText}>
@@ -151,7 +152,7 @@ export default function ReadingTab() {
                 <SectionHeader
                   title="Currently Reading"
                   subtitle={`${inProgress.length} texts`}
-                  icon={'\u25B6'}
+                  icon="play-circle-outline"
                 />
                 <FlatList
                   horizontal
@@ -161,7 +162,7 @@ export default function ReadingTab() {
                   contentContainerStyle={styles.progressCards}
                   renderItem={({ item: { book, progress } }) => (
                     <TouchableOpacity
-                      style={[styles.progressCard, shadows.card]}
+                      style={[styles.progressCard, styles.cardDepth, shadows.card]}
                       onPress={() => openReader(book.id)}
                       activeOpacity={0.7}
                     >
@@ -171,7 +172,7 @@ export default function ReadingTab() {
                           <Text style={styles.progressCardTitle} numberOfLines={2}>{book.title}</Text>
                           <Text style={styles.progressCardAuthor} numberOfLines={1}>{book.author}</Text>
                           <Text style={styles.progressCardCategory}>
-                            {categoryIcons[book.category] || '\u2726'} {book.category}
+                            <Ionicons name="flame-outline" size={11} color={colors.textMuted} /> {book.category}
                           </Text>
                         </View>
                       </View>
@@ -200,12 +201,12 @@ export default function ReadingTab() {
                 <SectionHeader
                   title="Bookmarks"
                   subtitle={`${bookmarks.length} saved`}
-                  icon={'\u2606'}
+                  icon="bookmark-outline"
                 />
                 {bookmarks.slice(0, 10).map(bm => (
                   <TouchableOpacity
                     key={bm.id}
-                    style={[styles.bookmarkCard, shadows.card]}
+                    style={[styles.bookmarkCard, styles.cardDepth, shadows.card]}
                     onPress={() => openReader(bm.bookId)}
                     activeOpacity={0.7}
                   >
@@ -219,7 +220,7 @@ export default function ReadingTab() {
                         {new Date(bm.createdAt).toLocaleDateString()}
                       </Text>
                     </View>
-                    <Text style={styles.bookmarkArrow}>{'\u203A'}</Text>
+                    <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
                   </TouchableOpacity>
                 ))}
               </>
@@ -231,7 +232,7 @@ export default function ReadingTab() {
                 <SectionHeader
                   title="Completed"
                   subtitle={`${completed.length} texts mastered`}
-                  icon={'\u2713'}
+                  icon="checkmark-circle-outline"
                 />
                 {completed.map(({ book }) => (
                   <BookListItem
@@ -272,31 +273,42 @@ const styles = StyleSheet.create({
     ...fonts.sansRegular,
     fontSize: 13,
     color: colors.textSecondary,
+    fontWeight: '300',
     marginTop: 4,
   },
   statsStrip: {
     flexDirection: 'row',
     backgroundColor: colors.surface,
     borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     marginHorizontal: spacing.xl,
     marginTop: 16,
     paddingVertical: 14,
+  },
+  cardDepth: {
+    borderWidth: 1,
+    borderColor: 'rgba(201,169,110,0.15)',
+    shadowColor: 'rgba(0,0,0,0.4)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   statsStripItem: {
     flex: 1,
     alignItems: 'center',
   },
   statsStripNumber: {
-    ...fonts.serifBold,
-    fontSize: 20,
+    fontSize: 48,
+    fontWeight: '200',
+    letterSpacing: -2,
     color: colors.accent,
+    fontVariant: ['tabular-nums'],
   },
   statsStripLabel: {
     ...fonts.sansLight,
     fontSize: 11,
     color: colors.textSecondary,
+    fontWeight: '300',
     marginTop: 2,
   },
   statsStripDivider: {
@@ -314,14 +326,10 @@ const styles = StyleSheet.create({
     borderRadius: 36,
     backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.surfaceBorder,
+    borderColor: 'rgba(201,169,110,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
-  },
-  emptyIcon: {
-    fontSize: 32,
-    color: colors.accentDim,
   },
   emptyTitle: {
     ...fonts.serifBold,
@@ -333,6 +341,7 @@ const styles = StyleSheet.create({
     ...fonts.sansRegular,
     fontSize: 14,
     color: colors.textSecondary,
+    fontWeight: '300',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 20,
@@ -358,8 +367,6 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH * 0.8,
     backgroundColor: colors.surface,
     borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     padding: spacing.lg,
     marginRight: spacing.md,
   },
@@ -382,12 +389,14 @@ const styles = StyleSheet.create({
     ...fonts.sansRegular,
     fontSize: 12,
     color: colors.textSecondary,
+    fontWeight: '300',
     marginBottom: 6,
   },
   progressCardCategory: {
     ...fonts.sansLight,
     fontSize: 11,
     color: colors.textMuted,
+    fontWeight: '300',
   },
   progressCardBottom: {},
   progressTrack: {
@@ -410,19 +419,20 @@ const styles = StyleSheet.create({
     ...fonts.sansBold,
     fontSize: 12,
     color: colors.accent,
+    fontVariant: ['tabular-nums'],
   },
   progressPage: {
     ...fonts.sansLight,
     fontSize: 11,
     color: colors.textMuted,
+    fontWeight: '300',
+    fontVariant: ['tabular-nums'],
   },
   bookmarkCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.surface,
     borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.surfaceBorder,
     marginHorizontal: spacing.xl,
     marginBottom: spacing.md,
     padding: spacing.md,
@@ -441,6 +451,7 @@ const styles = StyleSheet.create({
     ...fonts.sansBold,
     fontSize: 13,
     color: colors.accent,
+    fontVariant: ['tabular-nums'],
   },
   bookmarkInfo: {
     flex: 1,
@@ -460,11 +471,7 @@ const styles = StyleSheet.create({
     ...fonts.sansLight,
     fontSize: 11,
     color: colors.textMuted,
+    fontWeight: '300',
     marginTop: 2,
-  },
-  bookmarkArrow: {
-    fontSize: 22,
-    color: colors.textMuted,
-    marginLeft: 8,
   },
 });

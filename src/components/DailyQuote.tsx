@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, borderRadius, shadows } from '../constants/theme';
 import { dailyQuotes } from '../data/quotes';
 import { getDailyQuoteIndex } from '../services/storage';
@@ -23,17 +24,17 @@ export default function DailyQuoteCard({ onPress }: DailyQuoteProps) {
 
   return (
     <TouchableOpacity
-      style={[styles.container, shadows.glow]}
+      style={[styles.container, styles.cardDepth, shadows.glow]}
       onPress={() => onPress?.(quote.bookId)}
       activeOpacity={0.8}
     >
       <View style={styles.header}>
         <Text style={styles.label}>DAILY WISDOM</Text>
-        <Text style={styles.sunIcon}>{'\u263C'}</Text>
+        <Ionicons name="sunny-outline" size={18} color={colors.accent} />
       </View>
       <View style={styles.ornamentTop}>
         <View style={styles.ornamentDash} />
-        <Text style={styles.ornamentSymbol}>{'\u2726'}</Text>
+        <Ionicons name="sparkles" size={10} color={colors.accent} style={{ marginHorizontal: 8, opacity: 0.5 }} />
         <View style={styles.ornamentDash} />
       </View>
       <Text style={styles.quoteText}>
@@ -54,11 +55,18 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.surface,
     borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(201, 169, 110, 0.25)',
     marginHorizontal: spacing.xl,
     marginVertical: spacing.md,
     padding: spacing.xl,
+  },
+  cardDepth: {
+    borderWidth: 1,
+    borderColor: 'rgba(201,169,110,0.15)',
+    shadowColor: 'rgba(0,0,0,0.4)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   header: {
     flexDirection: 'row',
@@ -72,10 +80,6 @@ const styles = StyleSheet.create({
     color: colors.accent,
     letterSpacing: 2,
   },
-  sunIcon: {
-    fontSize: 18,
-    color: colors.accent,
-  },
   ornamentTop: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -87,12 +91,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: colors.accent,
     opacity: 0.3,
-  },
-  ornamentSymbol: {
-    fontSize: 10,
-    color: colors.accent,
-    marginHorizontal: 8,
-    opacity: 0.5,
   },
   ornamentBottom: {
     alignItems: 'center',
@@ -118,6 +116,7 @@ const styles = StyleSheet.create({
     ...fonts.sansLight,
     fontSize: 11,
     color: colors.textMuted,
+    fontWeight: '300',
     textAlign: 'center',
     marginTop: spacing.md,
   },
