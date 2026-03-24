@@ -109,7 +109,7 @@ export default function SearchScreen() {
           <TextInput
             ref={inputRef}
             style={styles.searchInput}
-            placeholder="Search titles, authors, or content..."
+            placeholder=""
             placeholderTextColor={colors.textMuted}
             value={query}
             onChangeText={setQuery}

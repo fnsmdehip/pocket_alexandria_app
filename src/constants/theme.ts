@@ -149,3 +149,8 @@ export const shadows = {
     elevation: 4,
   },
 } as const;
+
+export const APP_CONFIG = {
+  PRIVACY_POLICY_URL: 'https://pocket-alexandria.surge.sh/privacy',
+  TERMS_URL: 'https://pocket-alexandria.surge.sh/terms',
+};
