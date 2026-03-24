@@ -43,7 +43,9 @@ export default function BookCover({ book, progress, size = 'medium', onPress }: 
         <View style={styles.borderOuter}>
           <View style={[styles.borderInner, { backgroundColor: bg2 }]}>
             {/* Category icon */}
-            <Text style={[styles.icon, { fontSize: size === 'small' ? 18 : 28 }]}>{icon}</Text>
+            <Text style={[styles.icon, { fontSize: size === 'small' ? 18 : size === 'medium' ? 24 : 32 }]}>
+              {icon}
+            </Text>
 
             {/* Decorative line */}
             <View style={styles.ornamentLine} />
@@ -65,9 +67,11 @@ export default function BookCover({ book, progress, size = 'medium', onPress }: 
             </Text>
 
             {/* Year */}
-            <Text style={styles.year}>
-              {book.year < 0 ? `${Math.abs(book.year)} BCE` : book.year}
-            </Text>
+            {size !== 'small' && (
+              <Text style={styles.year}>
+                {book.year < 0 ? `${Math.abs(book.year)} BCE` : book.year}
+              </Text>
+            )}
 
             {/* Bottom ornament */}
             <View style={styles.ornamentLine} />
@@ -96,7 +100,7 @@ function getDimensions(size: 'small' | 'medium' | 'large') {
     case 'medium':
       return { width: (screenWidth - 52) / 2.5, height: 200 };
     case 'large':
-      return { width: 180, height: 260 };
+      return { width: 150, height: 220 };
   }
 }
 
@@ -125,7 +129,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.sm,
   },
   icon: {
     color: colors.accent,

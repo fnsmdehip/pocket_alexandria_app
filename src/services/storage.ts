@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BookProgress, Bookmark, ReaderSettings, ReadingStats, ReaderTheme } from '../types';
+import { BookProgress, Bookmark, ReaderSettings, ReadingStats, ReaderTheme, OnboardingState } from '../types';
 
 const KEYS = {
   PROGRESS_PREFIX: '@pa_progress_',
@@ -8,7 +8,34 @@ const KEYS = {
   STATS: '@pa_stats',
   LIBRARY: '@pa_library',
   RECENT: '@pa_recent',
+  ONBOARDING: '@pa_onboarding',
+  RECENT_SEARCHES: '@pa_recent_searches',
 } as const;
+
+// Onboarding
+export async function getOnboardingState(): Promise<OnboardingState> {
+  try {
+    const raw = await AsyncStorage.getItem(KEYS.ONBOARDING);
+    return raw ? JSON.parse(raw) : { completed: false, selectedCategories: [], isPremium: false };
+  } catch {
+    return { completed: false, selectedCategories: [], isPremium: false };
+  }
+}
+
+export async function saveOnboardingState(state: Partial<OnboardingState>): Promise<void> {
+  try {
+    const current = await getOnboardingState();
+    await AsyncStorage.setItem(KEYS.ONBOARDING, JSON.stringify({ ...current, ...state }));
+  } catch {}
+}
+
+export async function completeOnboarding(selectedCategories: string[]): Promise<void> {
+  await saveOnboardingState({ completed: true, selectedCategories });
+}
+
+export async function resetOnboarding(): Promise<void> {
+  await AsyncStorage.removeItem(KEYS.ONBOARDING);
+}
 
 // Reading Progress
 export async function getProgress(bookId: string): Promise<BookProgress | null> {
@@ -148,6 +175,30 @@ export async function removeFromLibrary(bookId: string): Promise<void> {
   try {
     const ids = await getLibraryBookIds();
     await AsyncStorage.setItem(KEYS.LIBRARY, JSON.stringify(ids.filter(id => id !== bookId)));
+  } catch {}
+}
+
+// Recent Searches
+export async function getRecentSearches(): Promise<string[]> {
+  try {
+    const raw = await AsyncStorage.getItem(KEYS.RECENT_SEARCHES);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function addRecentSearch(query: string): Promise<void> {
+  try {
+    let searches = await getRecentSearches();
+    searches = [query, ...searches.filter(s => s !== query)].slice(0, 10);
+    await AsyncStorage.setItem(KEYS.RECENT_SEARCHES, JSON.stringify(searches));
+  } catch {}
+}
+
+export async function clearRecentSearches(): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(KEYS.RECENT_SEARCHES);
   } catch {}
 }
 

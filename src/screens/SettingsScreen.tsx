@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,12 +6,12 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  Switch,
+  ActivityIndicator,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors, fonts, spacing, borderRadius, shadows, readerThemes } from '../constants/theme';
-import { getSettings, saveSettings, getStats, getAllProgress } from '../services/storage';
-import { getCacheSize, clearCache } from '../services/bookDownloader';
+import { getSettings, saveSettings, getStats, getAllProgress, resetOnboarding } from '../services/storage';
+import { getCacheSize, clearCache, downloadBook } from '../services/bookDownloader';
 import { books } from '../data/catalog';
 import { ReaderTheme, ReaderSettings, ReadingStats } from '../types';
 
@@ -30,6 +30,8 @@ export default function SettingsScreen() {
   });
   const [cacheSize, setCacheSize] = useState(0);
   const [progressCount, setProgressCount] = useState(0);
+  const [downloadingAll, setDownloadingAll] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
 
   const loadData = useCallback(async () => {
     const [s, st, cs, prog] = await Promise.all([
@@ -75,11 +77,57 @@ export default function SettingsScreen() {
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Clear',
+          text: 'Clear Cache',
           style: 'destructive',
           onPress: async () => {
             await clearCache();
             setCacheSize(0);
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDownloadAll = () => {
+    Alert.alert(
+      'Download All Books',
+      'This will download all 156 texts for offline reading. This may take several minutes and use data.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Download All',
+          onPress: async () => {
+            setDownloadingAll(true);
+            setDownloadProgress(0);
+            let done = 0;
+            for (const book of books) {
+              try {
+                await downloadBook(book);
+              } catch {}
+              done++;
+              setDownloadProgress(done / books.length);
+            }
+            setDownloadingAll(false);
+            const cs = await getCacheSize();
+            setCacheSize(cs);
+            Alert.alert('Downloads Complete', `${done} books are now available offline.`);
+          },
+        },
+      ]
+    );
+  };
+
+  const handleResetOnboarding = () => {
+    Alert.alert(
+      'Reset Onboarding',
+      'This will show the welcome screens again next time you open the app.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reset',
+          onPress: async () => {
+            await resetOnboarding();
+            Alert.alert('Done', 'Onboarding will show again on next launch.');
           },
         },
       ]
@@ -138,11 +186,17 @@ export default function SettingsScreen() {
           <View style={styles.settingRow}>
             <Text style={styles.settingLabel}>Font Size</Text>
             <View style={styles.stepper}>
-              <TouchableOpacity style={styles.stepperBtn} onPress={() => updateFontSize(-1)}>
+              <TouchableOpacity
+                style={styles.stepperBtn}
+                onPress={() => updateFontSize(-1)}
+              >
                 <Text style={styles.stepperBtnText}>-</Text>
               </TouchableOpacity>
               <Text style={styles.stepperValue}>{settings.fontSize}</Text>
-              <TouchableOpacity style={styles.stepperBtn} onPress={() => updateFontSize(1)}>
+              <TouchableOpacity
+                style={styles.stepperBtn}
+                onPress={() => updateFontSize(1)}
+              >
                 <Text style={styles.stepperBtnText}>+</Text>
               </TouchableOpacity>
             </View>
@@ -154,11 +208,17 @@ export default function SettingsScreen() {
           <View style={styles.settingRow}>
             <Text style={styles.settingLabel}>Line Spacing</Text>
             <View style={styles.stepper}>
-              <TouchableOpacity style={styles.stepperBtn} onPress={() => updateLineHeight(-0.1)}>
+              <TouchableOpacity
+                style={styles.stepperBtn}
+                onPress={() => updateLineHeight(-0.1)}
+              >
                 <Text style={styles.stepperBtnText}>-</Text>
               </TouchableOpacity>
               <Text style={styles.stepperValue}>{settings.lineHeight.toFixed(1)}</Text>
-              <TouchableOpacity style={styles.stepperBtn} onPress={() => updateLineHeight(0.1)}>
+              <TouchableOpacity
+                style={styles.stepperBtn}
+                onPress={() => updateLineHeight(0.1)}
+              >
                 <Text style={styles.stepperBtnText}>+</Text>
               </TouchableOpacity>
             </View>
@@ -220,9 +280,9 @@ export default function SettingsScreen() {
         </View>
       </View>
 
-      {/* Storage */}
+      {/* Download Management */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>STORAGE</Text>
+        <Text style={styles.sectionTitle}>DOWNLOAD MANAGEMENT</Text>
         <View style={[styles.card, shadows.card]}>
           <View style={styles.settingRow}>
             <View>
@@ -233,6 +293,38 @@ export default function SettingsScreen() {
               <Text style={styles.dangerBtnText}>Clear Cache</Text>
             </TouchableOpacity>
           </View>
+
+          <View style={styles.divider} />
+
+          <View style={styles.settingRow}>
+            <View>
+              <Text style={styles.settingLabel}>Download All Books</Text>
+              <Text style={styles.settingHint}>Save all 156 texts for offline</Text>
+            </View>
+            {downloadingAll ? (
+              <View style={styles.downloadProgress}>
+                <ActivityIndicator size="small" color={colors.accent} />
+                <Text style={styles.downloadProgressText}>
+                  {Math.round(downloadProgress * 100)}%
+                </Text>
+              </View>
+            ) : (
+              <TouchableOpacity style={styles.actionBtn} onPress={handleDownloadAll}>
+                <Text style={styles.actionBtnText}>Download</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </View>
+
+      {/* App */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>APP</Text>
+        <View style={[styles.card, shadows.card]}>
+          <TouchableOpacity style={styles.settingRow} onPress={handleResetOnboarding}>
+            <Text style={styles.settingLabel}>Show Onboarding Again</Text>
+            <Text style={styles.settingArrow}>{'\u203A'}</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -274,7 +366,7 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: spacing.xl,
-    paddingTop: 16,
+    paddingTop: 12,
     paddingBottom: 8,
   },
   headerTitle: {
@@ -344,6 +436,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 4,
+    minHeight: 48,
   },
   settingColumn: {
     paddingVertical: 4,
@@ -359,13 +452,17 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: 2,
   },
+  settingArrow: {
+    fontSize: 22,
+    color: colors.textMuted,
+  },
   stepper: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   stepperBtn: {
-    width: 36,
-    height: 36,
+    width: 44,
+    height: 44,
     backgroundColor: colors.surfaceLight,
     borderRadius: borderRadius.sm,
     borderWidth: 1,
@@ -397,6 +494,8 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     borderWidth: 1,
     borderColor: colors.surfaceBorder,
+    minHeight: 52,
+    justifyContent: 'center',
   },
   themeOptionActive: {
     borderColor: colors.accent,
@@ -420,28 +519,56 @@ const styles = StyleSheet.create({
     borderColor: colors.surfaceBorder,
   },
   previewAttribution: {
-    ...fonts.serifItalic,
+    fontFamily: 'Georgia',
+    fontStyle: 'italic',
     fontSize: 13,
     marginTop: 10,
     textAlign: 'right',
   },
   dangerBtn: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: borderRadius.sm,
     borderWidth: 1,
     borderColor: colors.error,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   dangerBtnText: {
     ...fonts.sansBold,
     fontSize: 13,
     color: colors.error,
   },
+  actionBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: borderRadius.sm,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  actionBtnText: {
+    ...fonts.sansBold,
+    fontSize: 13,
+    color: colors.accent,
+  },
+  downloadProgress: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  downloadProgressText: {
+    ...fonts.sansBold,
+    fontSize: 13,
+    color: colors.accent,
+  },
   aboutRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 8,
+    minHeight: 44,
   },
   aboutLabel: {
     ...fonts.sansRegular,

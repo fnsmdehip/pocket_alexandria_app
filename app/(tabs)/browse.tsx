@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Animated,
+  LayoutAnimation,
+  Platform,
+  UIManager,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,6 +16,23 @@ import { colors, fonts, spacing, borderRadius, shadows } from '../../src/constan
 import { categories, categoryIcons, categoryDescriptions, getBooksByCategory } from '../../src/data/catalog';
 import BookCover from '../../src/components/BookCover';
 import BookListItem from '../../src/components/BookListItem';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+const categoryColors: Record<string, string> = {
+  'Sacred Texts': '#3D2A5C',
+  'Philosophy': '#2A3D5C',
+  'Hermetic / Occult': '#5C4A2A',
+  'Psychology': '#2A5C5C',
+  'Apocrypha': '#5C2A2A',
+  'Astrology / Divination': '#2A2A5C',
+  'Eastern Wisdom': '#5C5A2A',
+  'Secret Societies': '#3D3D5C',
+  'Alchemy / Mysticism': '#5C2A4A',
+  'Forbidden / Controversial': '#5C2A2A',
+};
 
 export default function BrowseTab() {
   const router = useRouter();
@@ -22,8 +43,11 @@ export default function BrowseTab() {
   };
 
   const toggleCategory = (cat: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpandedCategory(prev => (prev === cat ? null : cat));
   };
+
+  const totalBooks = 156;
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
@@ -35,8 +59,35 @@ export default function BrowseTab() {
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Browse Collection</Text>
             <Text style={styles.headerSubtitle}>
-              156 texts across 10 traditions of wisdom
+              {totalBooks} texts across {(categories as unknown as string[]).length} traditions of wisdom
             </Text>
+
+            {/* Quick category pills */}
+            <FlatList
+              horizontal
+              data={categories as unknown as string[]}
+              keyExtractor={item => 'pill_' + item}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.pillsContainer}
+              renderItem={({ item }) => {
+                const icon = categoryIcons[item] || '\u2726';
+                const isActive = expandedCategory === item;
+                return (
+                  <TouchableOpacity
+                    style={[styles.pill, isActive && styles.pillActive]}
+                    onPress={() => toggleCategory(item)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[styles.pillIcon, isActive && styles.pillIconActive]}>
+                      {icon}
+                    </Text>
+                    <Text style={[styles.pillText, isActive && styles.pillTextActive]}>
+                      {item.split(' /')[0].split(' ')[0]}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              }}
+            />
           </View>
         }
         renderItem={({ item: category }) => {
@@ -44,6 +95,7 @@ export default function BrowseTab() {
           const icon = categoryIcons[category] || '\u2726';
           const description = categoryDescriptions[category] || '';
           const isExpanded = expandedCategory === category;
+          const accentColor = categoryColors[category] || '#2A2A5C';
 
           return (
             <View style={styles.categorySection}>
@@ -52,8 +104,12 @@ export default function BrowseTab() {
                 onPress={() => toggleCategory(category)}
                 activeOpacity={0.7}
               >
+                {/* Category header with color accent */}
+                <View style={[styles.categoryAccent, { backgroundColor: accentColor }]} />
                 <View style={styles.categoryHeader}>
-                  <Text style={styles.categoryIcon}>{icon}</Text>
+                  <View style={[styles.categoryIconWrap, { backgroundColor: accentColor + '30' }]}>
+                    <Text style={styles.categoryIcon}>{icon}</Text>
+                  </View>
                   <View style={styles.categoryInfo}>
                     <Text style={styles.categoryName}>{category}</Text>
                     <Text style={styles.categoryDesc} numberOfLines={2}>
@@ -66,6 +122,7 @@ export default function BrowseTab() {
                   </View>
                 </View>
 
+                {/* Preview row when collapsed */}
                 {!isExpanded && (
                   <FlatList
                     horizontal
@@ -82,8 +139,16 @@ export default function BrowseTab() {
                     )}
                   />
                 )}
+
+                {/* Expand indicator */}
+                <View style={styles.expandIndicator}>
+                  <Text style={styles.expandText}>
+                    {isExpanded ? '\u25B2 Collapse' : `\u25BC View all ${catBooks.length} texts`}
+                  </Text>
+                </View>
               </TouchableOpacity>
 
+              {/* Expanded book list */}
               {isExpanded && (
                 <View style={styles.expandedList}>
                   {catBooks.map(book => (
@@ -113,8 +178,8 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: spacing.xl,
-    paddingTop: 16,
-    paddingBottom: 8,
+    paddingTop: 12,
+    paddingBottom: 4,
   },
   headerTitle: {
     ...fonts.serifBold,
@@ -126,9 +191,46 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textSecondary,
     marginTop: 4,
+    marginBottom: 16,
+  },
+  pillsContainer: {
+    paddingBottom: 12,
+    gap: 8,
+  },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.round,
+    borderWidth: 1,
+    borderColor: colors.surfaceBorder,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    minHeight: 44,
+  },
+  pillActive: {
+    backgroundColor: colors.accentGlow,
+    borderColor: colors.accent,
+  },
+  pillIcon: {
+    fontSize: 14,
+    color: colors.textMuted,
+    marginRight: 6,
+  },
+  pillIconActive: {
+    color: colors.accent,
+  },
+  pillText: {
+    ...fonts.sansRegular,
+    fontSize: 13,
+    color: colors.textSecondary,
+  },
+  pillTextActive: {
+    ...fonts.sansBold,
+    color: colors.accent,
   },
   categorySection: {
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
   categoryCard: {
     backgroundColor: colors.surface,
@@ -138,17 +240,26 @@ const styles = StyleSheet.create({
     borderColor: colors.surfaceBorder,
     overflow: 'hidden',
   },
+  categoryAccent: {
+    height: 3,
+    width: '100%',
+  },
   categoryHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.lg,
   },
+  categoryIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
   categoryIcon: {
-    fontSize: 28,
+    fontSize: 24,
     color: colors.accent,
-    marginRight: spacing.lg,
-    width: 36,
-    textAlign: 'center',
   },
   categoryInfo: {
     flex: 1,
@@ -172,6 +283,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     paddingHorizontal: 12,
     paddingVertical: 6,
+    minWidth: 48,
   },
   countNumber: {
     ...fonts.serifBold,
@@ -185,8 +297,19 @@ const styles = StyleSheet.create({
   },
   previewRow: {
     paddingLeft: spacing.lg,
-    paddingBottom: spacing.lg,
+    paddingBottom: spacing.md,
     paddingRight: spacing.sm,
+  },
+  expandIndicator: {
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: colors.divider,
+  },
+  expandText: {
+    ...fonts.sansRegular,
+    fontSize: 12,
+    color: colors.accent,
   },
   expandedList: {
     paddingTop: spacing.sm,

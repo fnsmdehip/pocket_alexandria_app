@@ -7,15 +7,19 @@ import {
   RefreshControl,
   TouchableOpacity,
   Dimensions,
+  Animated,
+  Platform,
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts, spacing, borderRadius, shadows } from '../../src/constants/theme';
-import { books, getBookById } from '../../src/data/catalog';
+import { books, getBookById, categories, categoryIcons, getBooksByCategory } from '../../src/data/catalog';
 import { getAllProgress, getRecentBookIds, getLibraryBookIds } from '../../src/services/storage';
 import BookCover from '../../src/components/BookCover';
 import SectionHeader from '../../src/components/SectionHeader';
 import { BookProgress, Book } from '../../src/types';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function LibraryTab() {
   const router = useRouter();
@@ -59,33 +63,54 @@ export default function LibraryTab() {
 
   const downloadedBooks = books.filter(b => downloadedIds.has(b.id));
 
+  const completedCount = Object.values(progressMap).filter(p => p.percentComplete >= 95).length;
+  const readingCount = Object.values(progressMap).filter(p => p.percentComplete > 0 && p.percentComplete < 95).length;
+  const totalPagesRead = Object.values(progressMap).reduce((sum, p) => sum + p.currentPage, 0);
+
+  // Pick featured collections from 3 random categories
+  const featuredCategories = (categories as unknown as string[]).slice(0, 3);
+
   const openReader = (bookId: string) => {
     router.push(`/reader/${bookId}`);
   };
 
   const renderHeader = () => (
     <View>
-      {/* Hero */}
+      {/* Hero section */}
       <View style={styles.hero}>
-        <Text style={styles.heroIcon}>{'\u03A6'}</Text>
-        <Text style={styles.heroTitle}>Pocket Alexandria</Text>
-        <Text style={styles.heroSubtitle}>Your personal ancient library</Text>
-        <View style={styles.heroStats}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{downloadedIds.size}</Text>
-            <Text style={styles.statLabel}>Downloaded</Text>
+        <View style={styles.heroTop}>
+          <View>
+            <Text style={styles.heroGreeting}>
+              {getGreeting()}
+            </Text>
+            <Text style={styles.heroTitle}>Your Library</Text>
           </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{Object.keys(progressMap).length}</Text>
+          <View style={styles.heroIconWrap}>
+            <Text style={styles.heroIcon}>{'\u03A6'}</Text>
+          </View>
+        </View>
+
+        {/* Stats cards */}
+        <View style={styles.statsRow}>
+          <View style={[styles.statCard, shadows.card]}>
+            <Text style={styles.statEmoji}>{'\u2261'}</Text>
+            <Text style={styles.statNumber}>{downloadedIds.size}</Text>
+            <Text style={styles.statLabel}>Books</Text>
+          </View>
+          <View style={[styles.statCard, shadows.card]}>
+            <Text style={styles.statEmoji}>{'\u25B6'}</Text>
+            <Text style={styles.statNumber}>{readingCount}</Text>
             <Text style={styles.statLabel}>Reading</Text>
           </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>
-              {Object.values(progressMap).filter(p => p.percentComplete >= 95).length}
-            </Text>
-            <Text style={styles.statLabel}>Completed</Text>
+          <View style={[styles.statCard, shadows.card]}>
+            <Text style={styles.statEmoji}>{'\u2713'}</Text>
+            <Text style={styles.statNumber}>{completedCount}</Text>
+            <Text style={styles.statLabel}>Finished</Text>
+          </View>
+          <View style={[styles.statCard, shadows.card]}>
+            <Text style={styles.statEmoji}>{'\u2606'}</Text>
+            <Text style={styles.statNumber}>{totalPagesRead}</Text>
+            <Text style={styles.statLabel}>Pages</Text>
           </View>
         </View>
       </View>
@@ -101,12 +126,34 @@ export default function LibraryTab() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.horizontalList}
             renderItem={({ item }) => (
-              <BookCover
-                book={item}
-                progress={progressMap[item.id]?.percentComplete}
-                size="medium"
+              <TouchableOpacity
+                style={[styles.continueCard, shadows.card]}
                 onPress={() => openReader(item.id)}
-              />
+                activeOpacity={0.7}
+              >
+                <BookCover
+                  book={item}
+                  progress={progressMap[item.id]?.percentComplete}
+                  size="small"
+                />
+                <View style={styles.continueInfo}>
+                  <Text style={styles.continueTitle} numberOfLines={2}>{item.title}</Text>
+                  <Text style={styles.continueAuthor} numberOfLines={1}>{item.author}</Text>
+                  <View style={styles.continueProgress}>
+                    <View style={styles.continueProgressTrack}>
+                      <View
+                        style={[
+                          styles.continueProgressFill,
+                          { width: `${progressMap[item.id]?.percentComplete || 0}%` },
+                        ]}
+                      />
+                    </View>
+                    <Text style={styles.continuePercent}>
+                      {Math.round(progressMap[item.id]?.percentComplete || 0)}%
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
             )}
           />
         </>
@@ -134,6 +181,54 @@ export default function LibraryTab() {
         </>
       )}
 
+      {/* Featured collections for discovery */}
+      {continueReading.length === 0 && recentBooks.length === 0 && downloadedBooks.length === 0 && (
+        <>
+          <View style={styles.emptyState}>
+            <View style={styles.emptyIconContainer}>
+              <Text style={styles.emptyIcon}>{'\u03A6'}</Text>
+              <View style={styles.emptyIconRing} />
+            </View>
+            <Text style={styles.emptyTitle}>Welcome, Seeker</Text>
+            <Text style={styles.emptyText}>
+              Your personal library awaits. Browse the collection and begin your journey through the wisdom of the ages.
+            </Text>
+            <TouchableOpacity
+              style={styles.emptyBtn}
+              onPress={() => router.push('/(tabs)/browse')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.emptyBtnText}>Browse Collection</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Show a preview from each category */}
+          {featuredCategories.map(cat => {
+            const catBooks = getBooksByCategory(cat).slice(0, 5);
+            const icon = categoryIcons[cat] || '\u2726';
+            return (
+              <View key={cat}>
+                <SectionHeader title={cat} icon={icon} />
+                <FlatList
+                  horizontal
+                  data={catBooks}
+                  keyExtractor={item => item.id}
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.horizontalList}
+                  renderItem={({ item }) => (
+                    <BookCover
+                      book={item}
+                      size="small"
+                      onPress={() => openReader(item.id)}
+                    />
+                  )}
+                />
+              </View>
+            );
+          })}
+        </>
+      )}
+
       {/* Downloaded Library */}
       {downloadedBooks.length > 0 && (
         <SectionHeader
@@ -141,16 +236,6 @@ export default function LibraryTab() {
           subtitle={`${downloadedBooks.length} books`}
           icon={'\u2605'}
         />
-      )}
-
-      {downloadedBooks.length === 0 && recentBooks.length === 0 && (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyIcon}>{'\u03A6'}</Text>
-          <Text style={styles.emptyTitle}>Welcome, Seeker</Text>
-          <Text style={styles.emptyText}>
-            Your library is empty. Browse the collection and begin your journey through the wisdom of the ages.
-          </Text>
-        </View>
       )}
     </View>
   );
@@ -180,67 +265,137 @@ export default function LibraryTab() {
   );
 }
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: colors.background,
   },
   hero: {
-    alignItems: 'center',
-    paddingTop: 20,
+    paddingHorizontal: spacing.xl,
+    paddingTop: 12,
     paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.divider,
   },
-  heroIcon: {
-    fontSize: 36,
-    color: colors.accent,
-    marginBottom: 8,
+  heroTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  heroGreeting: {
+    ...fonts.sansRegular,
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 2,
   },
   heroTitle: {
     ...fonts.serifBold,
-    fontSize: 26,
+    fontSize: 28,
     color: colors.parchment,
-    letterSpacing: 1,
   },
-  heroSubtitle: {
-    ...fonts.sansLight,
-    fontSize: 13,
-    color: colors.textSecondary,
-    marginTop: 4,
+  heroIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.accentGlow,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(201, 169, 110, 0.25)',
   },
-  heroStats: {
+  heroIcon: {
+    fontSize: 24,
+    color: colors.accent,
+  },
+  statsRow: {
     flexDirection: 'row',
-    marginTop: 16,
+    gap: 10,
+  },
+  statCard: {
+    flex: 1,
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.md,
     borderWidth: 1,
     borderColor: colors.surfaceBorder,
     paddingVertical: 12,
-    paddingHorizontal: 24,
-  },
-  statItem: {
     alignItems: 'center',
-    paddingHorizontal: 16,
+  },
+  statEmoji: {
+    fontSize: 16,
+    color: colors.accent,
+    marginBottom: 4,
   },
   statNumber: {
     ...fonts.serifBold,
-    fontSize: 20,
-    color: colors.accent,
+    fontSize: 18,
+    color: colors.parchment,
   },
   statLabel: {
     ...fonts.sansLight,
-    fontSize: 11,
+    fontSize: 10,
     color: colors.textSecondary,
     marginTop: 2,
-  },
-  statDivider: {
-    width: 1,
-    backgroundColor: colors.divider,
   },
   horizontalList: {
     paddingLeft: spacing.xl,
     paddingRight: spacing.sm,
+  },
+  continueCard: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.surfaceBorder,
+    padding: 10,
+    marginRight: spacing.md,
+    width: SCREEN_WIDTH * 0.75,
+  },
+  continueInfo: {
+    flex: 1,
+    paddingLeft: 10,
+    justifyContent: 'center',
+  },
+  continueTitle: {
+    ...fonts.serifBold,
+    fontSize: 14,
+    color: colors.textPrimary,
+    marginBottom: 2,
+  },
+  continueAuthor: {
+    ...fonts.sansRegular,
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginBottom: 8,
+  },
+  continueProgress: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  continueProgressTrack: {
+    flex: 1,
+    height: 3,
+    backgroundColor: colors.surfaceBorder,
+    borderRadius: 1.5,
+    overflow: 'hidden',
+  },
+  continueProgressFill: {
+    height: 3,
+    backgroundColor: colors.accent,
+    borderRadius: 1.5,
+  },
+  continuePercent: {
+    ...fonts.sansBold,
+    fontSize: 11,
+    color: colors.accent,
+    marginLeft: 8,
   },
   grid: {
     paddingBottom: 100,
@@ -250,13 +405,27 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 60,
+    paddingVertical: 40,
     paddingHorizontal: 40,
+  },
+  emptyIconContainer: {
+    width: 80,
+    height: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
   },
   emptyIcon: {
     fontSize: 48,
     color: colors.accentDim,
-    marginBottom: 16,
+  },
+  emptyIconRing: {
+    position: 'absolute',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 1,
+    borderColor: 'rgba(201, 169, 110, 0.15)',
   },
   emptyTitle: {
     ...fonts.serifBold,
@@ -270,5 +439,19 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
+    marginBottom: 20,
+  },
+  emptyBtn: {
+    backgroundColor: colors.accent,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    minHeight: 48,
+    justifyContent: 'center',
+  },
+  emptyBtnText: {
+    ...fonts.sansBold,
+    fontSize: 15,
+    color: colors.background,
   },
 });

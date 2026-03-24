@@ -41,9 +41,16 @@ export interface ReaderSettings {
   lineHeight: number;
 }
 
+export interface OnboardingState {
+  completed: boolean;
+  selectedCategories: string[];
+  isPremium: boolean;
+}
+
 export type RootStackParamList = {
   Main: undefined;
   Reader: { bookId: string };
+  Onboarding: undefined;
 };
 
 export type TabParamList = {

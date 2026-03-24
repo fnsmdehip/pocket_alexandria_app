@@ -49,12 +49,17 @@ export default function BookListItem({ book, progress, downloaded, onPress }: Bo
 
         {/* Progress bar */}
         {progress !== undefined && progress > 0 && (
-          <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${Math.min(progress, 100)}%` }]} />
+          <View style={styles.progressContainer}>
+            <View style={styles.progressTrack}>
+              <View style={[styles.progressFill, { width: `${Math.min(progress, 100)}%` }]} />
+            </View>
             <Text style={styles.progressText}>{Math.round(progress)}%</Text>
           </View>
         )}
       </View>
+
+      {/* Arrow */}
+      <Text style={styles.arrow}>{'\u203A'}</Text>
     </TouchableOpacity>
   );
 }
@@ -70,6 +75,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     padding: spacing.md,
     alignItems: 'center',
+    minHeight: 72,
   },
   miniCover: {
     width: 50,
@@ -118,21 +124,31 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.success,
   },
-  progressTrack: {
+  progressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 6,
   },
+  progressTrack: {
+    flex: 1,
+    height: 3,
+    backgroundColor: colors.surfaceBorder,
+    borderRadius: 1.5,
+    overflow: 'hidden',
+  },
   progressFill: {
-    height: 2,
+    height: 3,
     backgroundColor: colors.accent,
-    borderRadius: 1,
-    flex: 0,
-    minWidth: 2,
+    borderRadius: 1.5,
   },
   progressText: {
     fontSize: 10,
     color: colors.textMuted,
     marginLeft: 6,
+  },
+  arrow: {
+    fontSize: 22,
+    color: colors.textMuted,
+    marginLeft: 8,
   },
 });
