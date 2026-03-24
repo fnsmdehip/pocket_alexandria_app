@@ -25,6 +25,23 @@ export interface Bookmark {
   createdAt: string;
 }
 
+export interface Highlight {
+  id: string;
+  bookId: string;
+  page: number;
+  text: string;
+  note?: string;
+  color: string;
+  createdAt: string;
+}
+
+export interface DailyQuote {
+  text: string;
+  source: string;
+  author: string;
+  bookId: string;
+}
+
 export interface ReadingStats {
   booksStarted: number;
   booksCompleted: number;

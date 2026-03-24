@@ -1,15 +1,18 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BookProgress, Bookmark, ReaderSettings, ReadingStats, ReaderTheme, OnboardingState } from '../types';
+import { BookProgress, Bookmark, Highlight, ReaderSettings, ReadingStats, ReaderTheme, OnboardingState } from '../types';
 
 const KEYS = {
   PROGRESS_PREFIX: '@pa_progress_',
   BOOKMARKS: '@pa_bookmarks',
+  HIGHLIGHTS: '@pa_highlights',
   SETTINGS: '@pa_settings',
   STATS: '@pa_stats',
   LIBRARY: '@pa_library',
   RECENT: '@pa_recent',
   ONBOARDING: '@pa_onboarding',
   RECENT_SEARCHES: '@pa_recent_searches',
+  DAILY_QUOTE_DATE: '@pa_daily_quote_date',
+  DAILY_QUOTE_INDEX: '@pa_daily_quote_index',
 } as const;
 
 // Onboarding
@@ -108,6 +111,69 @@ export async function removeBookmark(id: string): Promise<void> {
     const filtered = all.filter(b => b.id !== id);
     await AsyncStorage.setItem(KEYS.BOOKMARKS, JSON.stringify(filtered));
   } catch {}
+}
+
+// Highlights
+export async function getHighlights(bookId?: string): Promise<Highlight[]> {
+  try {
+    const raw = await AsyncStorage.getItem(KEYS.HIGHLIGHTS);
+    const all: Highlight[] = raw ? JSON.parse(raw) : [];
+    if (bookId) return all.filter(h => h.bookId === bookId);
+    return all;
+  } catch {
+    return [];
+  }
+}
+
+export async function addHighlight(highlight: Omit<Highlight, 'id' | 'createdAt'>): Promise<void> {
+  try {
+    const all = await getHighlights();
+    const newHL: Highlight = {
+      ...highlight,
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      createdAt: new Date().toISOString(),
+    };
+    all.push(newHL);
+    await AsyncStorage.setItem(KEYS.HIGHLIGHTS, JSON.stringify(all));
+  } catch {}
+}
+
+export async function removeHighlight(id: string): Promise<void> {
+  try {
+    const all = await getHighlights();
+    const filtered = all.filter(h => h.id !== id);
+    await AsyncStorage.setItem(KEYS.HIGHLIGHTS, JSON.stringify(filtered));
+  } catch {}
+}
+
+export async function updateHighlightNote(id: string, note: string): Promise<void> {
+  try {
+    const all = await getHighlights();
+    const idx = all.findIndex(h => h.id === id);
+    if (idx !== -1) {
+      all[idx].note = note;
+      await AsyncStorage.setItem(KEYS.HIGHLIGHTS, JSON.stringify(all));
+    }
+  } catch {}
+}
+
+// Daily Quote
+export async function getDailyQuoteIndex(): Promise<number> {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const savedDate = await AsyncStorage.getItem(KEYS.DAILY_QUOTE_DATE);
+    const savedIndex = await AsyncStorage.getItem(KEYS.DAILY_QUOTE_INDEX);
+    if (savedDate === today && savedIndex) {
+      return parseInt(savedIndex, 10);
+    }
+    // New day - pick new quote
+    const newIndex = Math.floor(Math.random() * 50);
+    await AsyncStorage.setItem(KEYS.DAILY_QUOTE_DATE, today);
+    await AsyncStorage.setItem(KEYS.DAILY_QUOTE_INDEX, newIndex.toString());
+    return newIndex;
+  } catch {
+    return 0;
+  }
 }
 
 // Reader Settings

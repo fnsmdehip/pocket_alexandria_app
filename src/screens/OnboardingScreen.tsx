@@ -8,9 +8,10 @@ import {
   Animated,
   ScrollView,
   Platform,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, fonts, spacing, borderRadius, shadows } from '../constants/theme';
+import { colors, fonts, spacing, borderRadius, shadows, APP_CONFIG } from '../constants/theme';
 import { categories, categoryIcons, categoryDescriptions, getBooksByCategory } from '../data/catalog';
 import { completeOnboarding } from '../services/storage';
 import BookCover from '../components/BookCover';
@@ -301,6 +302,8 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     </View>
   );
 
+  const [selectedPlan, setSelectedPlan] = useState<'annual' | 'monthly'>('annual');
+
   const renderPaywall = () => (
     <View style={styles.stepContainer}>
       <ScrollView contentContainerStyle={styles.paywallScroll} showsVerticalScrollIndicator={false}>
@@ -308,78 +311,104 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
           <Text style={styles.paywallIcon}>{'\u03A6'}</Text>
           <Text style={styles.paywallTitle}>Unlock the Full Library</Text>
           <Text style={styles.paywallSubtitle}>
-            Access all 156 texts and premium features
+            Start your 7-day free trial today
           </Text>
         </View>
 
-        {/* Free tier */}
-        <View style={styles.tierCard}>
-          <View style={styles.tierHeader}>
-            <Text style={styles.tierName}>Free</Text>
-            <Text style={styles.tierPrice}>$0</Text>
+        {/* Plan selection */}
+        <TouchableOpacity
+          style={[
+            styles.planOption,
+            selectedPlan === 'annual' && styles.planOptionSelected,
+          ]}
+          onPress={() => setSelectedPlan('annual')}
+          activeOpacity={0.7}
+        >
+          <View style={styles.planRadio}>
+            <View style={[styles.planRadioInner, selectedPlan === 'annual' && styles.planRadioActive]} />
           </View>
-          <View style={styles.tierFeatures}>
-            {[
-              [true, '10 books from the collection'],
-              [true, 'Basic reader with themes'],
-              [true, 'Bookmarks and progress tracking'],
-              [false, 'Full 156-text library'],
-              [false, 'Highlights and notes'],
-              [false, 'Quote extraction and sharing'],
-            ].map(([included, feature], i) => (
-              <View key={i} style={styles.tierFeatureRow}>
-                <Text style={[styles.tierCheck, !included && styles.tierCheckDisabled]}>
-                  {included ? '\u2713' : '\u2717'}
-                </Text>
-                <Text style={[styles.tierFeatureText, !included && styles.tierFeatureDisabled]}>
-                  {feature as string}
-                </Text>
+          <View style={styles.planInfo}>
+            <View style={styles.planNameRow}>
+              <Text style={[styles.planName, selectedPlan === 'annual' && styles.planNameActive]}>Annual</Text>
+              <View style={styles.planSaveBadge}>
+                <Text style={styles.planSaveText}>SAVE 58%</Text>
               </View>
-            ))}
+            </View>
+            <Text style={[styles.planPrice, selectedPlan === 'annual' && styles.planPriceActive]}>
+              $9.99/year
+            </Text>
+            <Text style={styles.planDetail}>$0.83/month after free trial</Text>
           </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.planOption,
+            selectedPlan === 'monthly' && styles.planOptionSelected,
+          ]}
+          onPress={() => setSelectedPlan('monthly')}
+          activeOpacity={0.7}
+        >
+          <View style={styles.planRadio}>
+            <View style={[styles.planRadioInner, selectedPlan === 'monthly' && styles.planRadioActive]} />
+          </View>
+          <View style={styles.planInfo}>
+            <Text style={[styles.planName, selectedPlan === 'monthly' && styles.planNameActive]}>Monthly</Text>
+            <Text style={[styles.planPrice, selectedPlan === 'monthly' && styles.planPriceActive]}>
+              $1.99/month
+            </Text>
+            <Text style={styles.planDetail}>Cancel anytime</Text>
+          </View>
+        </TouchableOpacity>
+
+        {/* What you get */}
+        <View style={styles.whatYouGet}>
+          <Text style={styles.whatYouGetTitle}>Premium includes:</Text>
+          {[
+            'All 156 texts from 10 traditions',
+            'Bookmarks, highlights & personal notes',
+            'Offline access to all texts',
+            'Daily wisdom quotes',
+            'Night, Sepia & Day reader themes',
+          ].map((feature, i) => (
+            <View key={i} style={styles.tierFeatureRow}>
+              <Text style={[styles.tierCheck, styles.tierCheckPremium]}>{'\u2713'}</Text>
+              <Text style={[styles.tierFeatureText, styles.tierFeaturePremium]}>{feature}</Text>
+            </View>
+          ))}
         </View>
 
-        {/* Premium tier */}
-        <View style={[styles.tierCard, styles.tierCardPremium]}>
-          <View style={styles.premiumBadge}>
-            <Text style={styles.premiumBadgeText}>BEST VALUE</Text>
-          </View>
-          <View style={styles.tierHeader}>
-            <Text style={[styles.tierName, styles.tierNamePremium]}>Premium</Text>
-            <View style={styles.tierPriceRow}>
-              <Text style={[styles.tierPrice, styles.tierPricePremium]}>$9.99</Text>
-              <Text style={styles.tierPricePeriod}>/year</Text>
-            </View>
-          </View>
-          <View style={styles.tierFeatures}>
-            {[
-              'All 156 texts from 10 traditions',
-              'Night, Sepia & Day reader themes',
-              'Bookmarks and reading progress',
-              'Highlights and personal notes',
-              'Quote extraction and sharing',
-              'Offline access to all texts',
-            ].map((feature, i) => (
-              <View key={i} style={styles.tierFeatureRow}>
-                <Text style={[styles.tierCheck, styles.tierCheckPremium]}>{'\u2713'}</Text>
-                <Text style={[styles.tierFeatureText, styles.tierFeaturePremium]}>{feature}</Text>
-              </View>
-            ))}
-          </View>
+        {/* Free tier note */}
+        <View style={styles.freeNote}>
+          <Text style={styles.freeNoteTitle}>Free plan:</Text>
+          <Text style={styles.freeNoteText}>10 books, basic reader, bookmarks & progress tracking</Text>
         </View>
       </ScrollView>
 
       <View style={styles.bottomActions}>
         {renderDots()}
         <TouchableOpacity style={[styles.primaryBtn, styles.premiumBtn]} onPress={handleFinish}>
-          <Text style={styles.primaryBtnText}>Start Free Trial</Text>
+          <Text style={styles.primaryBtnText}>Start 7-Day Free Trial</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.skipBtn} onPress={handleFinish}>
           <Text style={styles.skipBtnText}>Continue with Free</Text>
         </TouchableOpacity>
         <Text style={styles.legalText}>
-          No payment required now. Cancel anytime.
+          7-day free trial, then {selectedPlan === 'annual' ? '$9.99/year' : '$1.99/month'}.{'\n'}Cancel anytime. No payment required now.
         </Text>
+        <View style={styles.legalLinks}>
+          <TouchableOpacity onPress={() => Linking.openURL(APP_CONFIG.PRIVACY_POLICY_URL)}>
+            <Text style={styles.legalLinkText}>Privacy</Text>
+          </TouchableOpacity>
+          <Text style={styles.legalSeparator}>{'\u00B7'}</Text>
+          <TouchableOpacity onPress={() => Linking.openURL(APP_CONFIG.TERMS_URL)}>
+            <Text style={styles.legalLinkText}>Terms</Text>
+          </TouchableOpacity>
+          <Text style={styles.legalSeparator}>{'\u00B7'}</Text>
+          <TouchableOpacity onPress={() => Linking.openURL(APP_CONFIG.SUPPORT_URL)}>
+            <Text style={styles.legalLinkText}>Support</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -866,5 +895,131 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     textAlign: 'center',
     marginTop: 4,
+    lineHeight: 18,
+  },
+
+  // Plan selection
+  planOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1.5,
+    borderColor: colors.surfaceBorder,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  planOptionSelected: {
+    borderColor: colors.accent,
+    backgroundColor: 'rgba(201, 169, 110, 0.06)',
+  },
+  planRadio: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: colors.surfaceBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+  planRadioInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: 'transparent',
+  },
+  planRadioActive: {
+    backgroundColor: colors.accent,
+  },
+  planInfo: {
+    flex: 1,
+  },
+  planNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  planName: {
+    ...fonts.sansBold,
+    fontSize: 16,
+    color: colors.textSecondary,
+  },
+  planNameActive: {
+    color: colors.parchment,
+  },
+  planSaveBadge: {
+    backgroundColor: colors.accent,
+    borderRadius: borderRadius.round,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginLeft: 8,
+  },
+  planSaveText: {
+    ...fonts.sansBold,
+    fontSize: 10,
+    color: colors.background,
+    letterSpacing: 0.5,
+  },
+  planPrice: {
+    ...fonts.serifBold,
+    fontSize: 18,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  planPriceActive: {
+    color: colors.accent,
+  },
+  planDetail: {
+    ...fonts.sansLight,
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  whatYouGet: {
+    marginTop: spacing.xl,
+    gap: spacing.sm,
+  },
+  whatYouGetTitle: {
+    ...fonts.sansBold,
+    fontSize: 14,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
+  },
+  freeNote: {
+    marginTop: spacing.xl,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.md,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.surfaceBorder,
+  },
+  freeNoteTitle: {
+    ...fonts.sansBold,
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginBottom: 4,
+  },
+  freeNoteText: {
+    ...fonts.sansRegular,
+    fontSize: 13,
+    color: colors.textMuted,
+    lineHeight: 20,
+  },
+  legalLinks: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  legalLinkText: {
+    ...fonts.sansRegular,
+    fontSize: 12,
+    color: colors.textMuted,
+    textDecorationLine: 'underline',
+  },
+  legalSeparator: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginHorizontal: 8,
   },
 });

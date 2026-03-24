@@ -17,6 +17,7 @@ import { books, getBookById, categories, categoryIcons, getBooksByCategory } fro
 import { getAllProgress, getRecentBookIds, getLibraryBookIds } from '../../src/services/storage';
 import BookCover from '../../src/components/BookCover';
 import SectionHeader from '../../src/components/SectionHeader';
+import DailyQuoteCard from '../../src/components/DailyQuote';
 import { BookProgress, Book } from '../../src/types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -114,6 +115,9 @@ export default function LibraryTab() {
           </View>
         </View>
       </View>
+
+      {/* Daily Wisdom Quote */}
+      <DailyQuoteCard onPress={(bookId) => openReader(bookId)} />
 
       {/* Continue Reading */}
       {continueReading.length > 0 && (

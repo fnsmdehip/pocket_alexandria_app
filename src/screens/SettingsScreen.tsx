@@ -7,9 +7,10 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { colors, fonts, spacing, borderRadius, shadows, readerThemes } from '../constants/theme';
+import { colors, fonts, spacing, borderRadius, shadows, readerThemes, APP_CONFIG } from '../constants/theme';
 import { getSettings, saveSettings, getStats, getAllProgress, resetOnboarding } from '../services/storage';
 import { getCacheSize, clearCache, downloadBook } from '../services/bookDownloader';
 import { books } from '../data/catalog';
@@ -328,6 +329,48 @@ export default function SettingsScreen() {
         </View>
       </View>
 
+      {/* Legal */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>LEGAL</Text>
+        <View style={[styles.card, shadows.card]}>
+          <TouchableOpacity
+            style={styles.settingRow}
+            onPress={() => Linking.openURL(APP_CONFIG.PRIVACY_POLICY_URL)}
+          >
+            <Text style={styles.settingLabel}>Privacy Policy</Text>
+            <Text style={styles.settingArrow}>{'\u203A'}</Text>
+          </TouchableOpacity>
+          <View style={styles.divider} />
+          <TouchableOpacity
+            style={styles.settingRow}
+            onPress={() => Linking.openURL(APP_CONFIG.TERMS_URL)}
+          >
+            <Text style={styles.settingLabel}>Terms of Service</Text>
+            <Text style={styles.settingArrow}>{'\u203A'}</Text>
+          </TouchableOpacity>
+          <View style={styles.divider} />
+          <TouchableOpacity
+            style={styles.settingRow}
+            onPress={() => Linking.openURL(APP_CONFIG.SUPPORT_URL)}
+          >
+            <Text style={styles.settingLabel}>Support</Text>
+            <Text style={styles.settingArrow}>{'\u203A'}</Text>
+          </TouchableOpacity>
+          <View style={styles.divider} />
+          <TouchableOpacity
+            style={styles.settingRow}
+            onPress={() => Alert.alert(
+              'Restore Purchases',
+              'If you previously purchased a subscription, your access will be restored.',
+              [{ text: 'OK' }]
+            )}
+          >
+            <Text style={styles.settingLabel}>Restore Purchases</Text>
+            <Text style={styles.settingArrow}>{'\u203A'}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       {/* About */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>ABOUT</Text>
@@ -346,10 +389,16 @@ export default function SettingsScreen() {
             <Text style={styles.aboutLabel}>Source</Text>
             <Text style={styles.aboutValue}>Project Gutenberg & Sacred Texts</Text>
           </View>
+          <View style={styles.divider} />
+          <View style={styles.aboutRow}>
+            <Text style={styles.aboutLabel}>Content</Text>
+            <Text style={styles.aboutValue}>All Public Domain</Text>
+          </View>
         </View>
 
         <Text style={styles.footer}>
           A curated collection of sacred, esoteric, and philosophical texts from the public domain.
+          {'\n\n'}All texts are sourced from Project Gutenberg and are in the public domain.
         </Text>
       </View>
     </ScrollView>

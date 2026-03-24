@@ -27,8 +27,11 @@ import {
   addBookmark,
   getBookmarks,
   removeBookmark,
+  getHighlights,
+  addHighlight,
+  removeHighlight,
 } from '../../src/services/storage';
-import { ReaderTheme, Bookmark, BookProgress } from '../../src/types';
+import { ReaderTheme, Bookmark, Highlight, BookProgress } from '../../src/types';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CHARS_PER_PAGE = 2400;
@@ -51,7 +54,9 @@ export default function ReaderPage() {
 
   const [showControls, setShowControls] = useState(false);
   const [showBookmarks, setShowBookmarks] = useState(false);
+  const [showHighlights, setShowHighlights] = useState(false);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   const scrollRef = useRef<ScrollView>(null);
@@ -148,6 +153,14 @@ export default function ReaderPage() {
   }, [bookId, showBookmarks, currentPage]);
 
   useEffect(() => {
+    if (!bookId) return;
+    (async () => {
+      const hl = await getHighlights(bookId);
+      setHighlights(hl);
+    })();
+  }, [bookId, showHighlights]);
+
+  useEffect(() => {
     if (pages.length === 0 || !bookId) return;
     const progress: BookProgress = {
       bookId,
@@ -221,6 +234,20 @@ export default function ReaderPage() {
     setBookmarks(bm);
     setIsBookmarked(!isBookmarked);
   }, [bookId, currentPage, isBookmarked, bookmarks]);
+
+  const handleHighlightPage = useCallback(async () => {
+    if (!bookId || !pages[currentPage]) return;
+    const previewText = pages[currentPage].slice(0, 150).replace(/\n/g, ' ').trim();
+    await addHighlight({
+      bookId,
+      page: currentPage,
+      text: previewText + '...',
+      color: '#C9A96E',
+    });
+    const hl = await getHighlights(bookId);
+    setHighlights(hl);
+    Alert.alert('Highlighted', `Page ${currentPage + 1} has been highlighted.`);
+  }, [bookId, currentPage, pages]);
 
   const handleFontSize = useCallback(
     async (delta: number) => {
@@ -460,6 +487,29 @@ export default function ReaderPage() {
                 </Text>
                 <Text style={styles.bookmarkArrow}>{'\u203A'}</Text>
               </TouchableOpacity>
+
+              {/* Highlights button */}
+              <TouchableOpacity
+                style={styles.bookmarksRow}
+                onPress={handleHighlightPage}
+              >
+                <Text style={styles.controlLabel}>
+                  {'\u270F'} Highlight This Page
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.bookmarksRow}
+                onPress={() => {
+                  toggleControls();
+                  setShowHighlights(true);
+                }}
+              >
+                <Text style={styles.controlLabel}>
+                  {'\u2726'} Highlights ({highlights.length})
+                </Text>
+                <Text style={styles.bookmarkArrow}>{'\u203A'}</Text>
+              </TouchableOpacity>
             </SafeAreaView>
           </View>
         </Animated.View>
@@ -511,6 +561,65 @@ export default function ReaderPage() {
                     <TouchableOpacity
                       onPress={() => removeBookmark(item.id).then(() => {
                         getBookmarks(bookId).then(setBookmarks);
+                      })}
+                      style={styles.bookmarkDeleteBtn}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    >
+                      <Text style={styles.bookmarkDelete}>{'\u2715'}</Text>
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                )}
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
+      {/* Highlights modal */}
+      <Modal visible={showHighlights} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHandle} />
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Highlights</Text>
+              <TouchableOpacity
+                onPress={() => setShowHighlights(false)}
+                style={styles.modalCloseBtn}
+              >
+                <Text style={styles.modalClose}>{'\u2715'}</Text>
+              </TouchableOpacity>
+            </View>
+            {highlights.length === 0 ? (
+              <View style={styles.emptyBookmarks}>
+                <Text style={styles.emptyBookmarksIcon}>{'\u2726'}</Text>
+                <Text style={styles.emptyBookmarksTitle}>No Highlights Yet</Text>
+                <Text style={styles.emptyBookmarksText}>
+                  Use the highlight button in controls to save passages.
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={highlights}
+                keyExtractor={item => item.id}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.bookmarkItem}
+                    onPress={() => {
+                      goToPage(item.page);
+                      setShowHighlights(false);
+                    }}
+                  >
+                    <View style={[styles.bookmarkItemLeft, { backgroundColor: 'rgba(201, 169, 110, 0.15)' }]}>
+                      <Text style={styles.bookmarkItemPage}>{item.page + 1}</Text>
+                    </View>
+                    <View style={styles.bookmarkInfo}>
+                      <Text style={styles.bookmarkLabel} numberOfLines={2}>{item.text}</Text>
+                      <Text style={styles.bookmarkDate}>
+                        {new Date(item.createdAt).toLocaleDateString()}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => removeHighlight(item.id).then(() => {
+                        getHighlights(bookId).then(setHighlights);
                       })}
                       style={styles.bookmarkDeleteBtn}
                       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}

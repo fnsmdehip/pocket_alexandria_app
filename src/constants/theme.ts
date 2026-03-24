@@ -151,6 +151,7 @@ export const shadows = {
 } as const;
 
 export const APP_CONFIG = {
-  PRIVACY_POLICY_URL: 'https://pocket-alexandria.surge.sh/privacy',
-  TERMS_URL: 'https://pocket-alexandria.surge.sh/terms',
+  PRIVACY_POLICY_URL: 'https://printmaxx.com/privacy',
+  TERMS_URL: 'https://printmaxx.com/tos',
+  SUPPORT_URL: 'https://pocket-alexandria.surge.sh/support',
 };
