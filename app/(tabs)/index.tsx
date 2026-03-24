@@ -1,0 +1,274 @@
+import React, { useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  RefreshControl,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors, fonts, spacing, borderRadius, shadows } from '../../src/constants/theme';
+import { books, getBookById } from '../../src/data/catalog';
+import { getAllProgress, getRecentBookIds, getLibraryBookIds } from '../../src/services/storage';
+import BookCover from '../../src/components/BookCover';
+import SectionHeader from '../../src/components/SectionHeader';
+import { BookProgress, Book } from '../../src/types';
+
+export default function LibraryTab() {
+  const router = useRouter();
+  const [recentIds, setRecentIds] = useState<string[]>([]);
+  const [progressMap, setProgressMap] = useState<Record<string, BookProgress>>({});
+  const [downloadedIds, setDownloadedIds] = useState<Set<string>>(new Set());
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadData = useCallback(async () => {
+    const [recent, progress, library] = await Promise.all([
+      getRecentBookIds(),
+      getAllProgress(),
+      getLibraryBookIds(),
+    ]);
+    setRecentIds(recent);
+    setProgressMap(progress);
+    setDownloadedIds(new Set(library));
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  }, [loadData]);
+
+  const recentBooks = recentIds
+    .map(id => getBookById(id))
+    .filter((b): b is Book => b !== undefined);
+
+  const continueReading = Object.entries(progressMap)
+    .filter(([_, p]) => p.percentComplete > 0 && p.percentComplete < 95)
+    .sort((a, b) => new Date(b[1].lastReadAt).getTime() - new Date(a[1].lastReadAt).getTime())
+    .map(([id]) => getBookById(id))
+    .filter((b): b is Book => b !== undefined);
+
+  const downloadedBooks = books.filter(b => downloadedIds.has(b.id));
+
+  const openReader = (bookId: string) => {
+    router.push(`/reader/${bookId}`);
+  };
+
+  const renderHeader = () => (
+    <View>
+      {/* Hero */}
+      <View style={styles.hero}>
+        <Text style={styles.heroIcon}>{'\u03A6'}</Text>
+        <Text style={styles.heroTitle}>Pocket Alexandria</Text>
+        <Text style={styles.heroSubtitle}>Your personal ancient library</Text>
+        <View style={styles.heroStats}>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{downloadedIds.size}</Text>
+            <Text style={styles.statLabel}>Downloaded</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{Object.keys(progressMap).length}</Text>
+            <Text style={styles.statLabel}>Reading</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>
+              {Object.values(progressMap).filter(p => p.percentComplete >= 95).length}
+            </Text>
+            <Text style={styles.statLabel}>Completed</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Continue Reading */}
+      {continueReading.length > 0 && (
+        <>
+          <SectionHeader title="Continue Reading" icon={'\u25B6'} />
+          <FlatList
+            horizontal
+            data={continueReading}
+            keyExtractor={item => item.id}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.horizontalList}
+            renderItem={({ item }) => (
+              <BookCover
+                book={item}
+                progress={progressMap[item.id]?.percentComplete}
+                size="medium"
+                onPress={() => openReader(item.id)}
+              />
+            )}
+          />
+        </>
+      )}
+
+      {/* Recently Viewed */}
+      {recentBooks.length > 0 && (
+        <>
+          <SectionHeader title="Recently Viewed" icon={'\u231B'} />
+          <FlatList
+            horizontal
+            data={recentBooks.slice(0, 10)}
+            keyExtractor={item => item.id}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.horizontalList}
+            renderItem={({ item }) => (
+              <BookCover
+                book={item}
+                progress={progressMap[item.id]?.percentComplete}
+                size="small"
+                onPress={() => openReader(item.id)}
+              />
+            )}
+          />
+        </>
+      )}
+
+      {/* Downloaded Library */}
+      {downloadedBooks.length > 0 && (
+        <SectionHeader
+          title="Your Library"
+          subtitle={`${downloadedBooks.length} books`}
+          icon={'\u2605'}
+        />
+      )}
+
+      {downloadedBooks.length === 0 && recentBooks.length === 0 && (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyIcon}>{'\u03A6'}</Text>
+          <Text style={styles.emptyTitle}>Welcome, Seeker</Text>
+          <Text style={styles.emptyText}>
+            Your library is empty. Browse the collection and begin your journey through the wisdom of the ages.
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.screen} edges={['top']}>
+      <FlatList
+        data={downloadedBooks}
+        keyExtractor={item => item.id}
+        numColumns={3}
+        ListHeaderComponent={renderHeader}
+        contentContainerStyle={styles.grid}
+        columnWrapperStyle={downloadedBooks.length > 0 ? styles.gridRow : undefined}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />
+        }
+        renderItem={({ item }) => (
+          <BookCover
+            book={item}
+            progress={progressMap[item.id]?.percentComplete}
+            size="small"
+            onPress={() => openReader(item.id)}
+          />
+        )}
+      />
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  hero: {
+    alignItems: 'center',
+    paddingTop: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.divider,
+  },
+  heroIcon: {
+    fontSize: 36,
+    color: colors.accent,
+    marginBottom: 8,
+  },
+  heroTitle: {
+    ...fonts.serifBold,
+    fontSize: 26,
+    color: colors.parchment,
+    letterSpacing: 1,
+  },
+  heroSubtitle: {
+    ...fonts.sansLight,
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginTop: 4,
+  },
+  heroStats: {
+    flexDirection: 'row',
+    marginTop: 16,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.surfaceBorder,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+  },
+  statItem: {
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  statNumber: {
+    ...fonts.serifBold,
+    fontSize: 20,
+    color: colors.accent,
+  },
+  statLabel: {
+    ...fonts.sansLight,
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: colors.divider,
+  },
+  horizontalList: {
+    paddingLeft: spacing.xl,
+    paddingRight: spacing.sm,
+  },
+  grid: {
+    paddingBottom: 100,
+  },
+  gridRow: {
+    paddingHorizontal: spacing.xl,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  emptyIcon: {
+    fontSize: 48,
+    color: colors.accentDim,
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    ...fonts.serifBold,
+    fontSize: 22,
+    color: colors.parchment,
+    marginBottom: 8,
+  },
+  emptyText: {
+    ...fonts.sansRegular,
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+});
